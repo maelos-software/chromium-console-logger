@@ -306,6 +306,41 @@ export async function startTUI(config, CDPClient, LogWriter) {
       return '';
     };
 
+    // Helper function to render text with search highlighting
+    const renderTextWithHighlight = (text, query, isCurrentMatch) => {
+      if (!query) return <Text>{text}</Text>;
+      
+      const lowerText = text.toLowerCase();
+      const lowerQuery = query.toLowerCase();
+      const parts = [];
+      let lastIndex = 0;
+      let matchIndex = lowerText.indexOf(lowerQuery);
+      
+      while (matchIndex !== -1) {
+        // Add text before match
+        if (matchIndex > lastIndex) {
+          parts.push(
+            <Text key={`text-${lastIndex}`}>{text.substring(lastIndex, matchIndex)}</Text>
+          );
+        }
+        // Add highlighted match
+        parts.push(
+          <Text key={`match-${matchIndex}`} backgroundColor={isCurrentMatch ? 'yellow' : 'blue'}>
+            {text.substring(matchIndex, matchIndex + query.length)}
+          </Text>
+        );
+        lastIndex = matchIndex + query.length;
+        matchIndex = lowerText.indexOf(lowerQuery, lastIndex);
+      }
+      
+      // Add remaining text
+      if (lastIndex < text.length) {
+        parts.push(<Text key={`text-${lastIndex}`}>{text.substring(lastIndex)}</Text>);
+      }
+      
+      return <>{parts}</>;
+    };
+
     const formatTimestamp = (ts) => {
       const date = new Date(ts);
       return date.toLocaleTimeString();
@@ -601,22 +636,15 @@ export async function startTUI(config, CDPClient, LogWriter) {
                 const isCurrentMatch = searchMatches[searchMatchIndex] === eventIndex;
                 const isSelected = selectedEventIndex === eventIndex;
                 
-                // Priority: current search match > selected > search match > normal
-                let bgColor = undefined;
-                let showCursor = false;
-                if (isCurrentMatch) {
-                  bgColor = 'yellow';
-                } else if (isSelected) {
-                  bgColor = 'gray';
-                  showCursor = true;
-                } else if (isSearchMatch) {
-                  bgColor = 'blue';
-                }
+                // Background color only for selected (not for search matches)
+                let bgColor = isSelected ? 'gray' : undefined;
+                let showCursor = isSelected;
                 
                 if (verboseMode) {
                   // Verbose mode - show full details inline
                   // Unicode arrow ▶ with space = 3 chars total
                   const cursorText = showCursor ? '▶ ' : '   ';
+                  const eventMessage = formatEventMessage(event);
                   return (
                     <Box key={scrollOffset + idx} flexDirection="column" marginBottom={1}>
                       <Box backgroundColor={bgColor}>
@@ -629,7 +657,7 @@ export async function startTUI(config, CDPClient, LogWriter) {
                         <Text> {event.url}</Text>
                       </Box>
                       <Box paddingLeft={2}>
-                        <Text>{formatEventMessage(event)}</Text>
+                        {searchQuery ? renderTextWithHighlight(eventMessage, searchQuery, isCurrentMatch) : <Text>{eventMessage}</Text>}
                       </Box>
                       {event.stackTrace?.callFrames && event.stackTrace.callFrames.length > 0 && (
                         <Box paddingLeft={2}>
@@ -654,7 +682,8 @@ export async function startTUI(config, CDPClient, LogWriter) {
                     <Text color={tabColor}>{tabLabel}</Text>
                     <Text> </Text>
                     <Text color={typeColor}>[{typeLabel}]</Text>
-                    <Text> {message}</Text>
+                    <Text> </Text>
+                    {searchQuery ? renderTextWithHighlight(message, searchQuery, isCurrentMatch) : <Text>{message}</Text>}
                   </Box>
                 );
               })
