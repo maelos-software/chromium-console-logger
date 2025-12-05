@@ -430,57 +430,37 @@ export async function startTUI(config, CDPClient, LogWriter) {
         {/* Controls */}
         <Box borderStyle="round" borderColor="gray" paddingX={1}>
           <Box flexDirection="column">
-            <Text>
-              <Text bold color="cyan">
-                [q]
-              </Text>{' '}
-              Quit{' '}
-              <Text bold color="cyan">
-                [p]
-              </Text>{' '}
-              {paused ? 'Resume' : 'Pause'}{' '}
-              <Text bold color="cyan">
-                [c]
-              </Text>{' '}
-              Clear{' '}
-              <Text bold color="cyan">
-                [l]
-              </Text>{' '}
-              Level{' '}
-              <Text bold color="cyan">
-                [t]
-              </Text>{' '}
-              Tab Nav{' '}
-              <Text bold color="cyan">
-                [a]
-              </Text>{' '}
-              All{' '}
-              <Text bold color="cyan">
-                [1-9]
-              </Text>{' '}
-              Select
-            </Text>
-            <Text>
-              <Text bold color="cyan">
-                [↑↓]
-              </Text>{' '}
-              {viewMode === 'tabs' ? 'Navigate' : 'Scroll'}{' '}
-              <Text bold color="cyan">
-                [PgUp/PgDn]
-              </Text>{' '}
-              Page{' '}
+            <Box>
+              <Text bold color="cyan">[q]</Text>
+              <Text> Quit </Text>
+              <Text bold color="cyan">[p]</Text>
+              <Text> {paused ? 'Resume' : 'Pause'} </Text>
+              <Text bold color="cyan">[c]</Text>
+              <Text> Clear </Text>
+              <Text bold color="cyan">[l]</Text>
+              <Text> Level </Text>
+              <Text bold color="cyan">[t]</Text>
+              <Text> Tab Nav </Text>
+              <Text bold color="cyan">[a]</Text>
+              <Text> All </Text>
+              <Text bold color="cyan">[1-9]</Text>
+              <Text> Select</Text>
+            </Box>
+            <Box>
+              <Text bold color="cyan">[↑↓]</Text>
+              <Text> {viewMode === 'tabs' ? 'Navigate' : 'Scroll'} </Text>
+              <Text bold color="cyan">[PgUp/PgDn]</Text>
+              <Text> Page </Text>
               {viewMode === 'tabs' && (
                 <>
-                  <Text bold color="cyan">
-                    [Enter]
-                  </Text>{' '}
-                  Confirm
+                  <Text bold color="cyan">[Enter]</Text>
+                  <Text> Confirm </Text>
                 </>
               )}
               {tabs.length > maxVisibleTabCount && viewMode === 'events' && (
-                <Text dimColor> (Press [t] to see all {tabs.length} tabs)</Text>
+                <Text dimColor>(Press [t] to see all {tabs.length} tabs)</Text>
               )}
-            </Text>
+            </Box>
           </Box>
         </Box>
       </Box>
