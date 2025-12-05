@@ -424,10 +424,11 @@ export async function startTUI(config, CDPClient, LogWriter) {
     // If detail view is active, render that instead
     if (detailViewEvent) {
       const detailWidth = terminalSize.columns - 6; // Leave room for borders and padding
+      const detailMaxHeight = terminalSize.rows - 2; // Leave room for borders
       
       return (
-        <Box flexDirection="column">
-          <Box borderStyle="round" borderColor="yellow" paddingX={1}>
+        <Box flexDirection="column" height={terminalSize.rows}>
+          <Box borderStyle="round" borderColor="yellow" paddingX={1} maxHeight={detailMaxHeight} overflow="hidden">
             <Box flexDirection="column">
               <Text bold color="yellow">
                 Event Details (Press Esc to close, ↑↓ to navigate)
@@ -614,8 +615,8 @@ export async function startTUI(config, CDPClient, LogWriter) {
                 
                 if (verboseMode) {
                   // Verbose mode - show full details inline
-                  // Unicode arrow ▶ takes 2 columns, so use extra space for non-selected
-                  const cursorText = showCursor ? '▶ ' : '  ';
+                  // Unicode arrow ▶ with space = 3 chars total
+                  const cursorText = showCursor ? '▶ ' : '   ';
                   return (
                     <Box key={scrollOffset + idx} flexDirection="column" marginBottom={1}>
                       <Box backgroundColor={bgColor}>
@@ -643,8 +644,8 @@ export async function startTUI(config, CDPClient, LogWriter) {
                 }
                 
                 // Normal mode - compact view
-                // Unicode arrow ▶ takes 2 columns, so use extra space for non-selected
-                const cursorText = showCursor ? '▶ ' : '  ';
+                // Unicode arrow ▶ with space = 3 chars total
+                const cursorText = showCursor ? '▶ ' : '   ';
                 return (
                   <Box key={scrollOffset + idx} backgroundColor={bgColor}>
                     <Text color={showCursor ? 'cyan' : 'gray'}>{cursorText}</Text>
