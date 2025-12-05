@@ -144,6 +144,15 @@ export class CDPClient extends EventEmitter {
       return null;
     }
 
+    // If tab indices are specified, filter by them
+    if (this.config.tabIndices && this.config.tabIndices.length > 0) {
+      // Tab indices are 1-based, so we need to check if any match
+      const filtered = pageTargets.filter((t, idx) => 
+        this.config.tabIndices!.includes(idx + 1)
+      );
+      return filtered.length > 0 ? filtered[0] : null;
+    }
+
     // If URL substring filter is specified, use it
     if (this.config.targetUrlSubstring) {
       const filtered = pageTargets.filter((t) =>

@@ -14,10 +14,12 @@ export async function startTUI(config, CDPClient, LogWriter) {
     });
     const [tabs, setTabs] = useState([]);
     const [selectedTabId, setSelectedTabId] = useState(null); // null = all tabs
+    const [highlightedTabIndex, setHighlightedTabIndex] = useState(-1); // -1 = "All Tabs", 0+ = tab index
     const [recentEvents, setRecentEvents] = useState([]);
     const [paused, setPaused] = useState(false);
     const [statusMessage, setStatusMessage] = useState('Initializing...');
     const [scrollOffset, setScrollOffset] = useState(0);
+    const [viewMode, setViewMode] = useState('events'); // 'events' or 'tabs'
     const [terminalSize, setTerminalSize] = useState({
       rows: process.stdout.rows || 24,
       columns: process.stdout.columns || 80,
@@ -40,6 +42,7 @@ export async function startTUI(config, CDPClient, LogWriter) {
         port: config.port,
         targetUrlSubstring: config.targetUrlSubstring,
         verbose: false,
+        tabIndices: config.tabs,
       });
 
       const logWriter = new LogWriter({
@@ -119,17 +122,45 @@ export async function startTUI(config, CDPClient, LogWriter) {
       } else if (input === 'c') {
         setRecentEvents([]);
         setScrollOffset(0);
+      } else if (input === 't') {
+        // Toggle between tabs view and events view
+        setViewMode((prev) => (prev === 'events' ? 'tabs' : 'events'));
+        if (viewMode === 'events') {
+          setHighlightedTabIndex(-1); // Start at "All Tabs"
+        }
       } else if (input === 'a') {
         setSelectedTabId(null); // Show all tabs
+        setHighlightedTabIndex(-1);
       } else if (input >= '1' && input <= '9') {
         const idx = parseInt(input) - 1;
         if (idx < tabs.length) {
           setSelectedTabId(tabs[idx].id);
+          setHighlightedTabIndex(idx);
         }
       } else if (key.upArrow) {
-        setScrollOffset((prev) => Math.max(0, prev - 1));
+        if (viewMode === 'tabs') {
+          // Navigate tabs list
+          setHighlightedTabIndex((prev) => Math.max(-1, prev - 1));
+        } else {
+          // Scroll events
+          setScrollOffset((prev) => Math.max(0, prev - 1));
+        }
       } else if (key.downArrow) {
-        setScrollOffset((prev) => Math.min(recentEvents.length - 1, prev + 1));
+        if (viewMode === 'tabs') {
+          // Navigate tabs list
+          setHighlightedTabIndex((prev) => Math.min(tabs.length - 1, prev + 1));
+        } else {
+          // Scroll events
+          setScrollOffset((prev) => Math.min(recentEvents.length - 1, prev + 1));
+        }
+      } else if (key.return && viewMode === 'tabs') {
+        // Select highlighted tab
+        if (highlightedTabIndex === -1) {
+          setSelectedTabId(null); // All tabs
+        } else if (highlightedTabIndex >= 0 && highlightedTabIndex < tabs.length) {
+          setSelectedTabId(tabs[highlightedTabIndex].id);
+        }
+        setViewMode('events'); // Switch back to events view
       }
     });
 
@@ -212,16 +243,23 @@ export async function startTUI(config, CDPClient, LogWriter) {
         </Box>
 
         {/* Tabs Panel */}
-        <Box marginTop={1} borderStyle="round" borderColor="magenta" paddingX={1}>
+        <Box
+          marginTop={1}
+          borderStyle="round"
+          borderColor={viewMode === 'tabs' ? 'yellow' : 'magenta'}
+          paddingX={1}
+        >
           <Box flexDirection="column" width="100%">
-            <Text bold color="magenta">
-              Monitored Tabs ({tabs.length})
+            <Text bold color={viewMode === 'tabs' ? 'yellow' : 'magenta'}>
+              Monitored Tabs ({tabs.length}) {viewMode === 'tabs' && '← NAVIGATION MODE'}
             </Text>
             {tabs.length === 0 ? (
               <Text dimColor>No tabs detected</Text>
             ) : (
               <Box flexDirection="column">
-                <Text>
+                <Text
+                  backgroundColor={viewMode === 'tabs' && highlightedTabIndex === -1 ? 'blue' : undefined}
+                >
                   <Text bold color={selectedTabId === null ? 'cyan' : 'gray'}>
                     [a]
                   </Text>{' '}
@@ -229,9 +267,10 @@ export async function startTUI(config, CDPClient, LogWriter) {
                 </Text>
                 {tabs.slice(0, 9).map((tab, idx) => {
                   const isSelected = selectedTabId === tab.id;
+                  const isHighlighted = viewMode === 'tabs' && highlightedTabIndex === idx;
                   const title = truncateText(tab.title || tab.url, terminalSize.columns - 20);
                   return (
-                    <Text key={tab.id}>
+                    <Text key={tab.id} backgroundColor={isHighlighted ? 'blue' : undefined}>
                       <Text bold color={isSelected ? 'cyan' : 'gray'}>
                         [{idx + 1}]
                       </Text>{' '}
@@ -299,17 +338,29 @@ export async function startTUI(config, CDPClient, LogWriter) {
             </Text>{' '}
             Clear{' '}
             <Text bold color="cyan">
+              [t]
+            </Text>{' '}
+            Tab Nav{' '}
+            <Text bold color="cyan">
               [a]
             </Text>{' '}
-            All Tabs{' '}
+            All{' '}
             <Text bold color="cyan">
               [1-9]
             </Text>{' '}
-            Select Tab{' '}
+            Select{' '}
             <Text bold color="cyan">
               [↑↓]
             </Text>{' '}
-            Scroll
+            {viewMode === 'tabs' ? 'Navigate' : 'Scroll'}{' '}
+            {viewMode === 'tabs' && (
+              <>
+                <Text bold color="cyan">
+                  [Enter]
+                </Text>{' '}
+                Confirm
+              </>
+            )}
           </Text>
         </Box>
       </Box>

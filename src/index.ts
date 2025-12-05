@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
+import CDP from 'chrome-remote-interface';
 import { CDPClient } from './cdpClient';
 import { LogWriter } from './logWriter';
 import { CLIConfig } from './types';
@@ -8,6 +9,44 @@ import { CLIConfig } from './types';
 /**
  * Main entry point for the Vivaldi Console Capture CLI
  */
+
+/**
+ * Lists all available browser tabs
+ */
+async function listAvailableTabs(config: CLIConfig): Promise<void> {
+  try {
+    console.log(`Connecting to CDP at ${config.host}:${config.port}...`);
+    
+    const targets = await CDP.List({
+      host: config.host,
+      port: config.port,
+    });
+
+    const pageTargets = targets.filter((t: any) => t.type === 'page');
+
+    if (pageTargets.length === 0) {
+      console.log('No browser tabs found.');
+      return;
+    }
+
+    console.log(`\nFound ${pageTargets.length} browser tab(s):\n`);
+    
+    pageTargets.forEach((tab: any, idx: number) => {
+      const index = idx + 1;
+      const title = tab.title || '(no title)';
+      const url = tab.url;
+      console.log(`[${index}] ${title}`);
+      console.log(`    URL: ${url}`);
+      console.log(`    ID:  ${tab.id}`);
+      console.log('');
+    });
+
+    console.log('Use --tabs <numbers> to monitor specific tabs (e.g., --tabs 1,2,4)');
+  } catch (error: any) {
+    console.error(`Failed to list tabs: ${error.message}`);
+    process.exit(1);
+  }
+}
 
 const program = new Command();
 
@@ -23,6 +62,8 @@ program
   .option('--level <string...>', 'Console levels to capture (can specify multiple)', [])
   .option('--verbose', 'Enable verbose logging', false)
   .option('--tui', 'Enable Terminal UI mode', false)
+  .option('--list-tabs', 'List all available browser tabs and exit', false)
+  .option('--tabs <numbers>', 'Monitor only specific tabs by index (comma-separated, e.g., 1,2,4)')
   .option('--target-url-substring <string>', 'Filter targets by URL substring')
   .option('--max-size-bytes <number>', 'Maximum log file size before rotation')
   .option('--rotate-keep <number>', 'Number of rotated files to keep', '5');
@@ -30,6 +71,15 @@ program
 program.parse();
 
 const options = program.opts();
+
+// Parse tab indices if provided
+let tabIndices: number[] | undefined;
+if (options.tabs) {
+  tabIndices = options.tabs
+    .split(',')
+    .map((s: string) => parseInt(s.trim(), 10))
+    .filter((n: number) => !isNaN(n) && n > 0);
+}
 
 // Parse configuration
 const config: CLIConfig = {
@@ -43,10 +93,18 @@ const config: CLIConfig = {
   targetUrlSubstring: options.targetUrlSubstring,
   maxSizeBytes: options.maxSizeBytes ? parseInt(options.maxSizeBytes, 10) : undefined,
   rotateKeep: parseInt(options.rotateKeep, 10),
+  listTabs: options.listTabs,
+  tabs: tabIndices,
 };
 
 // Main function
 async function main() {
+  // If list-tabs mode is enabled, list tabs and exit
+  if (config.listTabs) {
+    await listAvailableTabs(config);
+    return;
+  }
+
   // If TUI mode is enabled, start the TUI
   if (options.tui) {
     // @ts-ignore - Dynamic ESM import
@@ -67,6 +125,7 @@ async function main() {
     port: config.port,
     targetUrlSubstring: config.targetUrlSubstring,
     verbose: config.verbose,
+    tabIndices: config.tabs,
   });
 
   const logWriter = new LogWriter({

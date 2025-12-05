@@ -6,6 +6,7 @@ export interface CDPClientConfig {
   port: number;
   targetUrlSubstring?: string;
   verbose: boolean;
+  tabIndices?: number[]; // 1-based tab indices to monitor
 }
 
 /**
@@ -45,4 +46,6 @@ export interface CLIConfig {
   targetUrlSubstring?: string;
   maxSizeBytes?: number;
   rotateKeep?: number;
+  listTabs?: boolean;
+  tabs?: number[]; // Tab indices to monitor (1-based)
 }
