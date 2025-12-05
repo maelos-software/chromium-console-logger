@@ -60,12 +60,12 @@ describe('Graceful Shutdown', () => {
 
       // Verify all events were written
       expect(fs.existsSync(logFile)).toBe(true);
-      
+
       const content = fs.readFileSync(logFile, 'utf8');
       const lines = content.trim().split('\n');
-      
+
       expect(lines.length).toBe(events.length);
-      
+
       // Verify each event
       lines.forEach((line, index) => {
         const parsed = JSON.parse(line);
@@ -101,16 +101,16 @@ describe('Graceful Shutdown', () => {
       };
 
       writer.write(event);
-      
+
       await writer.flush();
       await writer.flush();
       await writer.flush();
-      
+
       await writer.close();
 
       const content = fs.readFileSync(logFile, 'utf8');
       const lines = content.trim().split('\n');
-      
+
       expect(lines.length).toBe(1);
     });
   });

@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Test logs
+test-logs/
+
+# Config files
+*.config.js
+jest.config.js
+
+# Type definitions
+*.d.ts

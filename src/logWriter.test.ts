@@ -7,7 +7,7 @@ import { CapturedEvent } from './types';
 
 describe('LogWriter', () => {
   const testLogDir = path.join(__dirname, '../test-logs');
-  
+
   beforeAll(() => {
     if (!fs.existsSync(testLogDir)) {
       fs.mkdirSync(testLogDir, { recursive: true });
@@ -62,23 +62,23 @@ describe('LogWriter', () => {
             // Read and parse the written line
             const content = fs.readFileSync(logFile, 'utf8');
             const lines = content.trim().split('\n');
-            
+
             expect(lines.length).toBe(1);
-            
+
             const parsed = JSON.parse(lines[0]);
-            
+
             // Verify required fields are present
             expect(parsed).toHaveProperty('ts');
             expect(parsed).toHaveProperty('event');
             expect(parsed).toHaveProperty('type');
             expect(parsed).toHaveProperty('url');
-            
+
             // Verify types
             expect(typeof parsed.ts).toBe('number');
             expect(['console', 'exception']).toContain(parsed.event);
             expect(typeof parsed.type).toBe('string');
             expect(typeof parsed.url).toBe('string');
-            
+
             // Verify values match
             expect(parsed.ts).toBe(event.ts);
             expect(parsed.event).toBe(event.event);
@@ -100,7 +100,7 @@ describe('LogWriter', () => {
     it('should preserve all events across rotation', async () => {
       const logFile = path.join(testLogDir, `rotation-test-${Date.now()}.ndjson`);
       const maxSizeBytes = 300; // Small size to trigger rotation
-      
+
       const writer = new LogWriter({
         logFile,
         maxSizeBytes,
@@ -128,11 +128,14 @@ describe('LogWriter', () => {
 
       // Read all log files (current and rotated)
       const allEvents: CapturedEvent[] = [];
-      
+
       // Read current file
       if (fs.existsSync(logFile)) {
         const content = fs.readFileSync(logFile, 'utf8');
-        const lines = content.trim().split('\n').filter((line) => line.length > 0);
+        const lines = content
+          .trim()
+          .split('\n')
+          .filter((line) => line.length > 0);
         lines.forEach((line) => allEvents.push(JSON.parse(line)));
       }
 
@@ -141,19 +144,22 @@ describe('LogWriter', () => {
         const rotatedFile = `${logFile}.${i}`;
         if (fs.existsSync(rotatedFile)) {
           const content = fs.readFileSync(rotatedFile, 'utf8');
-          const lines = content.trim().split('\n').filter((line) => line.length > 0);
+          const lines = content
+            .trim()
+            .split('\n')
+            .filter((line) => line.length > 0);
           lines.forEach((line) => allEvents.push(JSON.parse(line)));
         }
       }
 
       // Verify all events are present
       expect(allEvents.length).toBe(events.length);
-      
+
       // Verify no duplicates by checking timestamps
       const timestamps = allEvents.map((e) => e.ts);
       const uniqueTimestamps = new Set(timestamps);
       expect(uniqueTimestamps.size).toBe(timestamps.length);
-      
+
       // Verify all original timestamps are present
       events.forEach((event) => {
         expect(timestamps).toContain(event.ts);
@@ -182,10 +188,10 @@ describe('LogWriter', () => {
       await writer.close();
 
       expect(fs.existsSync(logFile)).toBe(true);
-      
+
       const content = fs.readFileSync(logFile, 'utf8');
       const lines = content.trim().split('\n');
-      
+
       expect(lines.length).toBe(1);
       expect(() => JSON.parse(lines[0])).not.toThrow();
     });
@@ -209,9 +215,9 @@ describe('LogWriter', () => {
 
       const content = fs.readFileSync(logFile, 'utf8');
       const lines = content.trim().split('\n');
-      
+
       expect(lines.length).toBe(3);
-      
+
       const parsed = lines.map((line) => JSON.parse(line));
       expect(parsed[0].ts).toBe(1);
       expect(parsed[1].ts).toBe(2);
@@ -221,7 +227,7 @@ describe('LogWriter', () => {
     it('should trigger rotation at size threshold', async () => {
       const logFile = path.join(testLogDir, `rotation-threshold-${Date.now()}.ndjson`);
       const maxSizeBytes = 200;
-      
+
       const writer = new LogWriter({
         logFile,
         maxSizeBytes,
@@ -237,7 +243,9 @@ describe('LogWriter', () => {
           event: 'console',
           type: 'log',
           url: 'http://test.com/very/long/path/to/ensure/size/is/definitely/exceeded/for/rotation',
-          args: [`message ${i} with lots of additional text to increase the size of the event significantly`],
+          args: [
+            `message ${i} with lots of additional text to increase the size of the event significantly`,
+          ],
         });
       }
 
@@ -247,13 +255,13 @@ describe('LogWriter', () => {
       // Check that rotated file exists
       const rotatedFile = `${logFile}.1`;
       const rotationOccurred = fs.existsSync(rotatedFile);
-      
+
       // Check current file size
       let currentFileSize = 0;
       if (fs.existsSync(logFile)) {
         currentFileSize = fs.statSync(logFile).size;
       }
-      
+
       // Either rotation occurred OR we're testing rotation logic
       // The property test validates the full rotation behavior
       // This unit test just verifies the mechanism works
@@ -264,7 +272,7 @@ describe('LogWriter', () => {
       const logFile = path.join(testLogDir, `rotation-keep-${Date.now()}.ndjson`);
       const maxSizeBytes = 100;
       const rotateKeep = 2;
-      
+
       const writer = new LogWriter({
         logFile,
         maxSizeBytes,

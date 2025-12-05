@@ -122,10 +122,10 @@ const App: React.FC<AppProps & { ink: any }> = ({ config, ink }) => {
       event.type === 'error' || event.event === 'exception'
         ? 'red'
         : event.type === 'warn'
-        ? 'yellow'
-        : event.type === 'info'
-        ? 'blue'
-        : 'green';
+          ? 'yellow'
+          : event.type === 'info'
+            ? 'blue'
+            : 'green';
 
     const typeLabel = event.type.toUpperCase().padEnd(9);
     const url = event.url.length > 50 ? '...' + event.url.slice(-47) : event.url;

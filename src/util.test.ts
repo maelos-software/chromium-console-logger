@@ -29,10 +29,10 @@ describe('util', () => {
           (value) => {
             // Should not throw
             const result = safeSerialize(value);
-            
+
             // Result should be JSON-serializable
             expect(() => JSON.stringify(result)).not.toThrow();
-            
+
             // Verify specific type handling
             if (typeof value === 'function') {
               expect(result).toBe('[Function]');
@@ -52,7 +52,7 @@ describe('util', () => {
     it('should handle circular references', () => {
       const obj: any = { a: 1 };
       obj.self = obj;
-      
+
       const result = safeSerialize(obj);
       expect(() => JSON.stringify(result)).not.toThrow();
       expect(JSON.stringify(result)).toContain('[Circular]');
@@ -69,7 +69,7 @@ describe('util', () => {
     it('should preserve simple objects and arrays', () => {
       const obj = { a: 1, b: 'test' };
       const arr = [1, 2, 3];
-      
+
       expect(safeSerialize(obj)).toEqual(obj);
       expect(safeSerialize(arr)).toEqual(arr);
     });
@@ -90,11 +90,11 @@ describe('util', () => {
 
     it('should add jitter within range', () => {
       const results = Array.from({ length: 100 }, () => calculateBackoff(2, 100, 5000, 20));
-      
+
       // With 20% jitter on 400ms, range should be 320-480ms
       const min = Math.min(...results);
       const max = Math.max(...results);
-      
+
       expect(min).toBeGreaterThanOrEqual(320);
       expect(max).toBeLessThanOrEqual(480);
     });
@@ -120,7 +120,7 @@ describe('util', () => {
     it('should format timestamp as ISO 8601', () => {
       const timestamp = 1701234567890;
       const result = formatTimestamp(timestamp);
-      
+
       expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
       expect(new Date(result).getTime()).toBe(timestamp);
     });

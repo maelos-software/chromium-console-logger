@@ -16,7 +16,7 @@ import { CLIConfig } from './types';
 async function listAvailableTabs(config: CLIConfig): Promise<void> {
   try {
     console.log(`Connecting to CDP at ${config.host}:${config.port}...`);
-    
+
     const targets = await CDP.List({
       host: config.host,
       port: config.port,
@@ -30,7 +30,7 @@ async function listAvailableTabs(config: CLIConfig): Promise<void> {
     }
 
     console.log(`\nFound ${pageTargets.length} browser tab(s):\n`);
-    
+
     pageTargets.forEach((tab: any, idx: number) => {
       const index = idx + 1;
       const title = tab.title || '(no title)';
@@ -107,7 +107,7 @@ async function main() {
 
   // If TUI mode is enabled, start the TUI
   if (options.tui) {
-    // @ts-ignore - Dynamic ESM import
+    // @ts-expect-error - Dynamic ESM import
     const tuiModule = await import('./tui-runner.mjs');
     await tuiModule.startTUI(config, CDPClient, LogWriter);
     // TUI handles everything, so we exit here

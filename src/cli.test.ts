@@ -8,7 +8,7 @@ describe('CLI', () => {
   describe('CLI argument parsing', () => {
     it('should parse default values correctly', () => {
       const program = new Command();
-      
+
       program
         .option('--host <string>', 'CDP host address', '127.0.0.1')
         .option('--port <number>', 'CDP port number', '9222')
@@ -34,7 +34,7 @@ describe('CLI', () => {
 
     it('should parse custom host and port', () => {
       const program = new Command();
-      
+
       program
         .option('--host <string>', 'CDP host address', '127.0.0.1')
         .option('--port <number>', 'CDP port number', '9222');
@@ -48,7 +48,7 @@ describe('CLI', () => {
 
     it('should parse custom log file path', () => {
       const program = new Command();
-      
+
       program.option('--log-file <path>', 'Path to log file', 'browser-console.ndjson');
 
       program.parse(['node', 'test', '--log-file', 'logs/custom.ndjson']);
@@ -59,7 +59,7 @@ describe('CLI', () => {
 
     it('should parse boolean flags', () => {
       const program = new Command();
-      
+
       program
         .option('--include-console <boolean>', 'Include console events', 'true')
         .option('--include-exceptions <boolean>', 'Include exception events', 'true')
@@ -83,7 +83,7 @@ describe('CLI', () => {
 
     it('should parse multiple level filters', () => {
       const program = new Command();
-      
+
       program.option('--level <string...>', 'Console levels to capture', []);
 
       program.parse(['node', 'test', '--level', 'error', '--level', 'warn']);
@@ -94,7 +94,7 @@ describe('CLI', () => {
 
     it('should parse target URL substring', () => {
       const program = new Command();
-      
+
       program.option('--target-url-substring <string>', 'Filter targets by URL substring');
 
       program.parse(['node', 'test', '--target-url-substring', 'myapp']);
@@ -105,19 +105,12 @@ describe('CLI', () => {
 
     it('should parse rotation options', () => {
       const program = new Command();
-      
+
       program
         .option('--max-size-bytes <number>', 'Maximum log file size before rotation')
         .option('--rotate-keep <number>', 'Number of rotated files to keep', '5');
 
-      program.parse([
-        'node',
-        'test',
-        '--max-size-bytes',
-        '1000000',
-        '--rotate-keep',
-        '10',
-      ]);
+      program.parse(['node', 'test', '--max-size-bytes', '1000000', '--rotate-keep', '10']);
       const options = program.opts();
 
       expect(options.maxSizeBytes).toBe('1000000');

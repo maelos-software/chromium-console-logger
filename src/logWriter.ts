@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import { LogWriterConfig, CapturedEvent } from './types';
 
 /**
@@ -139,7 +138,7 @@ export class LogWriter {
    * Flushes any buffered data to disk
    */
   async flush(): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (!this.fileHandle) {
         resolve();
         return;

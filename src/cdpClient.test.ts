@@ -5,7 +5,7 @@ describe('CDPClient', () => {
    * Feature: vivaldi-console-capture, Property 1: Connection establishment with valid parameters
    * For any valid host and port combination where a CDP-enabled browser is listening,
    * the CDPClient should successfully establish a connection and emit a 'connected' event.
-   * 
+   *
    * Note: This test requires a running CDP-enabled browser and is more of an integration test.
    * We'll test the connection logic with mocked scenarios in unit tests.
    */
@@ -51,7 +51,7 @@ describe('CDPClient', () => {
   describe('Property 8: Target selection filters correctly', () => {
     it('should support URL substring filtering', () => {
       const urlSubstrings = ['test', 'example', 'localhost', 'app'];
-      
+
       urlSubstrings.forEach((substring) => {
         const client = new CDPClient({
           host: '127.0.0.1',
@@ -158,7 +158,7 @@ describe('CDPClient', () => {
       });
 
       expect(capturedEvents.length).toBe(consoleTypes.length);
-      
+
       consoleTypes.forEach((type, index) => {
         expect(capturedEvents[index].event).toBe('console');
         expect(capturedEvents[index].type).toBe(type);

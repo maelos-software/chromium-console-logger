@@ -42,7 +42,7 @@ export class CDPClient extends EventEmitter {
 
       // Find targets to connect to
       const targetsToConnect = this.findTargets(targets);
-      
+
       if (targetsToConnect.length === 0) {
         throw new Error('No suitable targets found');
       }
@@ -68,7 +68,7 @@ export class CDPClient extends EventEmitter {
       if (this.config.verbose) {
         console.error(`Failed to connect to CDP: ${error.message}`);
       }
-      
+
       if (this.shouldReconnect) {
         await this.reconnectWithBackoff();
       } else {
@@ -126,12 +126,12 @@ export class CDPClient extends EventEmitter {
         }
         this.clients.delete(target.id);
         this.currentTargets.delete(target.id);
-        
+
         // If all clients disconnected, emit disconnected event
         if (this.clients.size === 0) {
           this.connected = false;
           this.emit('disconnected');
-          
+
           if (this.shouldReconnect) {
             this.reconnectWithBackoff();
           }
@@ -177,7 +177,7 @@ export class CDPClient extends EventEmitter {
 
         // Find targets we should be connected to
         const targetsToConnect = this.findTargets(targets);
-        
+
         // Connect to any new targets
         const newTargets = targetsToConnect.filter((t: any) => !this.currentTargets.has(t.id));
         if (newTargets.length > 0) {
@@ -221,16 +221,14 @@ export class CDPClient extends EventEmitter {
 
     // If tab indices are specified, filter by them
     if (this.config.tabIndices && this.config.tabIndices.length > 0) {
-      pageTargets = pageTargets.filter((t: any, idx: number) => 
+      pageTargets = pageTargets.filter((t: any, idx: number) =>
         this.config.tabIndices!.includes(idx + 1)
       );
     }
 
     // If URL substring filter is specified, apply it
     if (this.config.targetUrlSubstring) {
-      pageTargets = pageTargets.filter((t: any) =>
-        t.url.includes(this.config.targetUrlSubstring!)
-      );
+      pageTargets = pageTargets.filter((t: any) => t.url.includes(this.config.targetUrlSubstring!));
     }
 
     return pageTargets;
@@ -307,7 +305,7 @@ export class CDPClient extends EventEmitter {
 
     while (this.shouldReconnect && !this.connected) {
       const delay = calculateBackoff(this.reconnectAttempt);
-      
+
       if (this.config.verbose) {
         console.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempt + 1})...`);
       }
@@ -331,13 +329,13 @@ export class CDPClient extends EventEmitter {
    */
   async disconnect(): Promise<void> {
     this.shouldReconnect = false;
-    
+
     // Clear target refresh interval
     if (this.targetRefreshInterval) {
       clearInterval(this.targetRefreshInterval);
       this.targetRefreshInterval = null;
     }
-    
+
     // Disconnect all clients
     const disconnectPromises = Array.from(this.clients.values()).map(async (client) => {
       try {
@@ -348,7 +346,7 @@ export class CDPClient extends EventEmitter {
     });
 
     await Promise.allSettled(disconnectPromises);
-    
+
     this.clients.clear();
     this.currentTargets.clear();
     this.connected = false;

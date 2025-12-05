@@ -22,9 +22,15 @@
   "scripts": {
     "build": "tsc && npx esbuild src/tui-runner.mjs --bundle --platform=node --format=esm --outfile=dist/tui-runner.mjs --external:ink --external:react --loader:.mjs=jsx",
     "test": "jest",
+    "test:coverage": "jest --coverage --collectCoverageFrom='src/**/*.ts' --collectCoverageFrom='!src/**/*.test.ts' --collectCoverageFrom='!src/**/*.d.ts'",
+    "test:watch": "jest --watch",
     "lint": "eslint src/**/*.ts",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "prepublishOnly": "npm run build"
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,mjs,js,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,mjs,js,json,md}\"",
+    "typecheck": "tsc --noEmit",
+    "validate": "npm run typecheck && npm run lint && npm run format:check && npm run test",
+    "prepublishOnly": "npm run validate && npm run build"
   },
   "keywords": [
     "cdp",

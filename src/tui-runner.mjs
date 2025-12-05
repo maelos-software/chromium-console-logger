@@ -309,13 +309,13 @@ export async function startTUI(config, CDPClient, LogWriter) {
     // Helper function to render text with search highlighting
     const renderTextWithHighlight = (text, query, isCurrentMatch) => {
       if (!query) return <Text>{text}</Text>;
-      
+
       const lowerText = text.toLowerCase();
       const lowerQuery = query.toLowerCase();
       const parts = [];
       let lastIndex = 0;
       let matchIndex = lowerText.indexOf(lowerQuery);
-      
+
       while (matchIndex !== -1) {
         // Add text before match
         if (matchIndex > lastIndex) {
@@ -332,12 +332,12 @@ export async function startTUI(config, CDPClient, LogWriter) {
         lastIndex = matchIndex + query.length;
         matchIndex = lowerText.indexOf(lowerQuery, lastIndex);
       }
-      
+
       // Add remaining text
       if (lastIndex < text.length) {
         parts.push(<Text key={`text-${lastIndex}`}>{text.substring(lastIndex)}</Text>);
       }
-      
+
       return <>{parts}</>;
     };
 
@@ -357,13 +357,13 @@ export async function startTUI(config, CDPClient, LogWriter) {
         event.type === 'error' || event.event === 'exception'
           ? 'red'
           : event.type === 'warn'
-          ? 'yellow'
-          : event.type === 'info'
-          ? 'blue'
-          : 'green';
+            ? 'yellow'
+            : event.type === 'info'
+              ? 'blue'
+              : 'green';
 
       const typeLabel = event.type.toUpperCase().padEnd(9);
-      
+
       // Find which tab this event came from
       let tabNumber = null;
       let tabColor = 'gray';
@@ -382,7 +382,7 @@ export async function startTUI(config, CDPClient, LogWriter) {
             return event.url.includes(tab.url) || tab.url.includes(event.url);
           }
         });
-        
+
         if (tabIndex !== -1) {
           tabNumber = tabIndex + 1;
           // Use different colors for different tabs
@@ -390,9 +390,9 @@ export async function startTUI(config, CDPClient, LogWriter) {
           tabColor = colors[tabIndex % colors.length];
         }
       }
-      
+
       const tabLabel = tabNumber ? `[T${tabNumber}]` : '[T?]';
-      
+
       // Calculate available width for message
       const usedWidth = time.length + tabLabel.length + typeLabel.length + 8; // 8 for spacing and brackets
       const availableWidth = Math.max(40, terminalWidth - usedWidth - 10);
@@ -414,7 +414,7 @@ export async function startTUI(config, CDPClient, LogWriter) {
 
     // Filter events by selected tab and log level
     let filteredEvents = recentEvents;
-    
+
     // Filter by tab
     if (selectedTabId) {
       filteredEvents = filteredEvents.filter((e) => {
@@ -422,7 +422,7 @@ export async function startTUI(config, CDPClient, LogWriter) {
         return tab && e.url.includes(tab.url);
       });
     }
-    
+
     // Filter by log level (runtime filter for display only)
     if (logLevelFilter.length > 0) {
       filteredEvents = filteredEvents.filter((e) => {
@@ -444,12 +444,12 @@ export async function startTUI(config, CDPClient, LogWriter) {
     const controlsHeight = 3; // Minimum height, will grow if text wraps
     const margins = 2;
     const fixedHeight = headerHeight + tabsPanelHeight + controlsHeight + margins;
-    
+
     // Events panel gets remaining space (minus 2 for its own borders)
     const eventsPanelInnerHeight = Math.max(3, terminalSize.rows - fixedHeight - 2);
     const maxVisibleEvents = eventsPanelInnerHeight - 1; // -1 for the "Events" header line
     const visibleEvents = filteredEvents.slice(scrollOffset, scrollOffset + maxVisibleEvents);
-    
+
     // Get visible tabs with scrolling
     const visibleTabs = tabs.slice(tabScrollOffset, tabScrollOffset + maxVisibleTabCount);
 
@@ -460,10 +460,16 @@ export async function startTUI(config, CDPClient, LogWriter) {
     if (detailViewEvent) {
       const detailWidth = terminalSize.columns - 6; // Leave room for borders and padding
       const detailMaxHeight = terminalSize.rows - 2; // Leave room for borders
-      
+
       return (
         <Box flexDirection="column" height={terminalSize.rows}>
-          <Box borderStyle="round" borderColor="yellow" paddingX={1} maxHeight={detailMaxHeight} overflow="hidden">
+          <Box
+            borderStyle="round"
+            borderColor="yellow"
+            paddingX={1}
+            maxHeight={detailMaxHeight}
+            overflow="hidden"
+          >
             <Box flexDirection="column">
               <Text bold color="yellow">
                 Event Details (Press Esc to close, ↑↓ to navigate)
@@ -492,7 +498,8 @@ export async function startTUI(config, CDPClient, LogWriter) {
                   </Box>
                   {detailViewEvent.stackTrace.callFrames?.map((frame, idx) => (
                     <Text key={idx} dimColor>
-                      at {frame.functionName || '(anonymous)'} ({truncateText(frame.url, detailWidth - 30)}:{frame.lineNumber}:
+                      at {frame.functionName || '(anonymous)'} (
+                      {truncateText(frame.url, detailWidth - 30)}:{frame.lineNumber}:
                       {frame.columnNumber})
                     </Text>
                   ))}
@@ -540,7 +547,8 @@ export async function startTUI(config, CDPClient, LogWriter) {
               )}
               {searchQuery && (
                 <>
-                  {' | '}Search: <Text color="green">{searchQuery}</Text> ({searchMatches.length} matches)
+                  {' | '}Search: <Text color="green">{searchQuery}</Text> ({searchMatches.length}{' '}
+                  matches)
                 </>
               )}
             </Text>
@@ -566,7 +574,8 @@ export async function startTUI(config, CDPClient, LogWriter) {
             <Text bold color={viewMode === 'tabs' ? 'yellow' : 'magenta'}>
               {tabScrollOffset > 0 && '↑ '}
               Monitored Tabs ({tabs.length})
-              {tabs.length > maxVisibleTabCount && ` [${tabScrollOffset + 1}-${Math.min(tabScrollOffset + maxVisibleTabCount, tabs.length)}]`}
+              {tabs.length > maxVisibleTabCount &&
+                ` [${tabScrollOffset + 1}-${Math.min(tabScrollOffset + maxVisibleTabCount, tabs.length)}]`}
               {tabScrollOffset + maxVisibleTabCount < tabs.length && ' ↓'}
               {viewMode === 'tabs' && ' ← NAV MODE'}
             </Text>
@@ -575,7 +584,9 @@ export async function startTUI(config, CDPClient, LogWriter) {
             ) : (
               <Box flexDirection="column">
                 <Text
-                  backgroundColor={viewMode === 'tabs' && highlightedTabIndex === -1 ? 'blue' : undefined}
+                  backgroundColor={
+                    viewMode === 'tabs' && highlightedTabIndex === -1 ? 'blue' : undefined
+                  }
                 >
                   <Text bold color={selectedTabId === null ? 'cyan' : 'gray'}>
                     [a]
@@ -618,7 +629,8 @@ export async function startTUI(config, CDPClient, LogWriter) {
               {filteredEvents.length > maxVisibleEvents && (
                 <Text dimColor>
                   {' '}
-                  ({scrollOffset + 1}-{Math.min(scrollOffset + maxVisibleEvents, filteredEvents.length)}/
+                  ({scrollOffset + 1}-
+                  {Math.min(scrollOffset + maxVisibleEvents, filteredEvents.length)}/
                   {filteredEvents.length})
                 </Text>
               )}
@@ -635,11 +647,11 @@ export async function startTUI(config, CDPClient, LogWriter) {
                 const isSearchMatch = searchMatches.includes(eventIndex);
                 const isCurrentMatch = searchMatches[searchMatchIndex] === eventIndex;
                 const isSelected = selectedEventIndex === eventIndex;
-                
+
                 // Background color only for selected (not for search matches)
                 let bgColor = isSelected ? 'gray' : undefined;
                 let showCursor = isSelected;
-                
+
                 if (verboseMode) {
                   // Verbose mode - show full details inline
                   // Unicode arrow ▶ with space = 3 chars total
@@ -657,20 +669,25 @@ export async function startTUI(config, CDPClient, LogWriter) {
                         <Text> {event.url}</Text>
                       </Box>
                       <Box paddingLeft={2}>
-                        {searchQuery ? renderTextWithHighlight(eventMessage, searchQuery, isCurrentMatch) : <Text>{eventMessage}</Text>}
+                        {searchQuery ? (
+                          renderTextWithHighlight(eventMessage, searchQuery, isCurrentMatch)
+                        ) : (
+                          <Text>{eventMessage}</Text>
+                        )}
                       </Box>
                       {event.stackTrace?.callFrames && event.stackTrace.callFrames.length > 0 && (
                         <Box paddingLeft={2}>
                           <Text dimColor>
                             at {event.stackTrace.callFrames[0].functionName || '(anonymous)'} (
-                            {event.stackTrace.callFrames[0].url}:{event.stackTrace.callFrames[0].lineNumber})
+                            {event.stackTrace.callFrames[0].url}:
+                            {event.stackTrace.callFrames[0].lineNumber})
                           </Text>
                         </Box>
                       )}
                     </Box>
                   );
                 }
-                
+
                 // Normal mode - compact view
                 // Unicode arrow ▶ with space = 3 chars total
                 const cursorText = showCursor ? '▶ ' : '   ';
@@ -683,7 +700,11 @@ export async function startTUI(config, CDPClient, LogWriter) {
                     <Text> </Text>
                     <Text color={typeColor}>[{typeLabel}]</Text>
                     <Text> </Text>
-                    {searchQuery ? renderTextWithHighlight(message, searchQuery, isCurrentMatch) : <Text>{message}</Text>}
+                    {searchQuery ? (
+                      renderTextWithHighlight(message, searchQuery, isCurrentMatch)
+                    ) : (
+                      <Text>{message}</Text>
+                    )}
                   </Box>
                 );
               })
@@ -694,35 +715,61 @@ export async function startTUI(config, CDPClient, LogWriter) {
         {/* Controls */}
         <Box borderStyle="round" borderColor="gray" paddingX={1}>
           <Box flexWrap="wrap">
-            <Text bold color="cyan">[q]</Text>
+            <Text bold color="cyan">
+              [q]
+            </Text>
             <Text> Quit </Text>
-            <Text bold color="cyan">[p]</Text>
+            <Text bold color="cyan">
+              [p]
+            </Text>
             <Text> {paused ? 'Resume' : 'Pause'} </Text>
-            <Text bold color="cyan">[c]</Text>
+            <Text bold color="cyan">
+              [c]
+            </Text>
             <Text> Clear </Text>
-            <Text bold color="cyan">[/]</Text>
+            <Text bold color="cyan">
+              [/]
+            </Text>
             <Text> Search </Text>
             {searchQuery && (
               <>
-                <Text bold color="cyan">[n/N]</Text>
+                <Text bold color="cyan">
+                  [n/N]
+                </Text>
                 <Text> Next/Prev </Text>
               </>
             )}
-            <Text bold color="cyan">[Enter]</Text>
+            <Text bold color="cyan">
+              [Enter]
+            </Text>
             <Text> Details </Text>
-            <Text bold color="cyan">[v]</Text>
+            <Text bold color="cyan">
+              [v]
+            </Text>
             <Text> Verbose </Text>
-            <Text bold color="cyan">[l]</Text>
+            <Text bold color="cyan">
+              [l]
+            </Text>
             <Text> Level </Text>
-            <Text bold color="cyan">[t]</Text>
+            <Text bold color="cyan">
+              [t]
+            </Text>
             <Text> Tab Nav </Text>
-            <Text bold color="cyan">[a]</Text>
+            <Text bold color="cyan">
+              [a]
+            </Text>
             <Text> All </Text>
-            <Text bold color="cyan">[1-9]</Text>
+            <Text bold color="cyan">
+              [1-9]
+            </Text>
             <Text> Select </Text>
-            <Text bold color="cyan">[↑↓]</Text>
+            <Text bold color="cyan">
+              [↑↓]
+            </Text>
             <Text> {viewMode === 'tabs' ? 'Navigate' : 'Select'} </Text>
-            <Text bold color="cyan">[PgUp/PgDn]</Text>
+            <Text bold color="cyan">
+              [PgUp/PgDn]
+            </Text>
             <Text> Page </Text>
             {tabs.length > maxVisibleTabCount && viewMode === 'events' && (
               <Text dimColor>(Press [t] to see all {tabs.length} tabs)</Text>
@@ -734,7 +781,7 @@ export async function startTUI(config, CDPClient, LogWriter) {
   };
 
   const { unmount, waitUntilExit } = render(<App />);
-  
+
   // Return cleanup function
   return { unmount, waitUntilExit };
 }

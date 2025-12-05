@@ -70,14 +70,14 @@ export function calculateBackoff(
 ): number {
   // Calculate exponential delay: initialDelay * 2^attempt
   const exponentialDelay = initialDelay * Math.pow(2, attempt);
-  
+
   // Cap at maximum delay
   const cappedDelay = Math.min(exponentialDelay, maxDelay);
-  
+
   // Add jitter: ±jitterPercent of the delay
   const jitterRange = cappedDelay * (jitterPercent / 100);
   const jitter = (Math.random() * 2 - 1) * jitterRange;
-  
+
   return Math.max(0, Math.round(cappedDelay + jitter));
 }
 
