@@ -423,13 +423,12 @@ export async function startTUI(config, CDPClient, LogWriter) {
 
     // If detail view is active, render that instead
     if (detailViewEvent) {
-      const detailHeight = terminalSize.rows - 2; // Leave room for borders
-      const detailWidth = terminalSize.columns - 4; // Leave room for borders and padding
+      const detailWidth = terminalSize.columns - 6; // Leave room for borders and padding
       
       return (
-        <Box flexDirection="column" width={terminalSize.columns} height={terminalSize.rows}>
-          <Box borderStyle="round" borderColor="yellow" paddingX={1} height={detailHeight} overflow="hidden">
-            <Box flexDirection="column" width={detailWidth}>
+        <Box flexDirection="column">
+          <Box borderStyle="round" borderColor="yellow" paddingX={1}>
+            <Box flexDirection="column">
               <Text bold color="yellow">
                 Event Details (Press Esc to close, ↑↓ to navigate)
               </Text>
@@ -615,14 +614,11 @@ export async function startTUI(config, CDPClient, LogWriter) {
                 
                 if (verboseMode) {
                   // Verbose mode - show full details inline
+                  const cursorChar = showCursor ? '▶' : ' ';
                   return (
                     <Box key={scrollOffset + idx} flexDirection="column" marginBottom={1}>
                       <Box backgroundColor={bgColor}>
-                        {showCursor ? (
-                          <Text color="cyan">▶ </Text>
-                        ) : (
-                          <Text>  </Text>
-                        )}
+                        <Text color={showCursor ? 'cyan' : 'gray'}>{cursorChar} </Text>
                         <Text dimColor={!isSearchMatch && !isSelected}>{time}</Text>
                         <Text> </Text>
                         <Text color={tabColor}>{tabLabel}</Text>
@@ -646,13 +642,10 @@ export async function startTUI(config, CDPClient, LogWriter) {
                 }
                 
                 // Normal mode - compact view
+                const cursorChar = showCursor ? '▶' : ' ';
                 return (
                   <Box key={scrollOffset + idx} backgroundColor={bgColor}>
-                    {showCursor ? (
-                      <Text color="cyan">▶ </Text>
-                    ) : (
-                      <Text>  </Text>
-                    )}
+                    <Text color={showCursor ? 'cyan' : 'gray'}>{cursorChar} </Text>
                     <Text dimColor={!isSearchMatch && !isSelected}>{time}</Text>
                     <Text> </Text>
                     <Text color={tabColor}>{tabLabel}</Text>
