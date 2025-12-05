@@ -9,9 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Read version from package.json
-const packageJson = JSON.parse(
-  readFileSync(path.join(__dirname, '../package.json'), 'utf-8')
-);
+const packageJson = JSON.parse(readFileSync(path.join(__dirname, '../package.json'), 'utf-8'));
 const VERSION = packageJson.version;
 
 export async function startTUI(config, CDPClient, LogWriter) {

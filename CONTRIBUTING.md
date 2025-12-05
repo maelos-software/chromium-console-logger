@@ -10,13 +10,17 @@ Thank you for your interest in contributing! This document provides guidelines a
    - A Chromium-based browser (Chrome, Vivaldi, Brave, Edge) with remote debugging enabled
 
 2. **Clone and Install**
+
    ```bash
    git clone https://github.com/rmk40/chromium-console-logger.git
    cd chromium-console-logger
    npm install
    ```
 
+   Git hooks are automatically installed and will run checks before commits and pushes.
+
 3. **Build the Project**
+
    ```bash
    npm run build
    ```
@@ -28,9 +32,14 @@ Thank you for your interest in contributing! This document provides guidelines a
 
 ## Development Workflow
 
-### Code Quality Checks
+### Automated Git Hooks
 
-Before committing, ensure your code passes all checks:
+This project uses git hooks to automatically check code quality:
+
+- **Pre-commit**: Formats code, runs linting, checks types (only on staged files)
+- **Pre-push**: Runs all tests
+
+These run automatically, but you can also run checks manually:
 
 ```bash
 # Run all validation checks
@@ -69,7 +78,7 @@ npm run build           # Build TypeScript and bundle TUI
 - **TypeScript**: Use strict type checking
 - **Formatting**: Prettier with 2-space indentation
 - **Linting**: ESLint with TypeScript rules
-- **Naming**: 
+- **Naming**:
   - camelCase for variables and functions
   - PascalCase for classes and types
   - UPPER_CASE for constants
@@ -87,11 +96,13 @@ npm run build           # Build TypeScript and bundle TUI
 This project uses [Conventional Commits](https://www.conventionalcommits.org/) for automatic versioning and changelog generation.
 
 **Format:**
+
 ```
 <type>(<scope>): <subject>
 ```
 
 **Examples:**
+
 ```bash
 feat: add search functionality to TUI
 fix: resolve connection timeout issue
@@ -100,6 +111,7 @@ refactor: simplify event filtering logic
 ```
 
 **Types:**
+
 - `feat`: New feature (minor version bump)
 - `fix`: Bug fix (patch version bump)
 - `docs`: Documentation changes
@@ -108,6 +120,7 @@ refactor: simplify event filtering logic
 - `chore`: Maintenance tasks
 
 **Breaking Changes:**
+
 ```bash
 feat!: redesign CLI interface
 
@@ -129,6 +142,7 @@ See [VERSIONING.md](.github/VERSIONING.md) for detailed guidelines.
 ## CI/CD
 
 All pull requests must pass:
+
 - Type checking (TypeScript)
 - Linting (ESLint)
 - Formatting (Prettier)
