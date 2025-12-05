@@ -84,14 +84,37 @@ npm run build           # Build TypeScript and bundle TUI
 
 ## Commit Messages
 
-Use clear, descriptive commit messages:
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) for automatic versioning and changelog generation.
 
+**Format:**
 ```
-Add feature X to improve Y
+<type>(<scope>): <subject>
+```
 
-- Detailed point 1
-- Detailed point 2
+**Examples:**
+```bash
+feat: add search functionality to TUI
+fix: resolve connection timeout issue
+docs: update installation instructions
+refactor: simplify event filtering logic
 ```
+
+**Types:**
+- `feat`: New feature (minor version bump)
+- `fix`: Bug fix (patch version bump)
+- `docs`: Documentation changes
+- `refactor`: Code refactoring
+- `test`: Test updates
+- `chore`: Maintenance tasks
+
+**Breaking Changes:**
+```bash
+feat!: redesign CLI interface
+
+BREAKING CHANGE: Command arguments have changed
+```
+
+See [VERSIONING.md](.github/VERSIONING.md) for detailed guidelines.
 
 ## Pull Request Process
 

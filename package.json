@@ -13,12 +13,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/chromium-console-logger.git"
+    "url": "https://github.com/rmk40/chromium-console-logger.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/chromium-console-logger/issues"
+    "url": "https://github.com/rmk40/chromium-console-logger/issues"
   },
-  "homepage": "https://github.com/yourusername/chromium-console-logger#readme",
+  "homepage": "https://github.com/rmk40/chromium-console-logger#readme",
   "scripts": {
     "build": "tsc && npx esbuild src/tui-runner.mjs --bundle --platform=node --format=esm --outfile=dist/tui-runner.mjs --external:ink --external:react --loader:.mjs=jsx",
     "test": "jest",
@@ -30,6 +30,10 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,mjs,js,json,md}\"",
     "typecheck": "tsc --noEmit",
     "validate": "npm run typecheck && npm run lint && npm run format:check && npm run test",
+    "release": "standard-version",
+    "release:minor": "standard-version --release-as minor",
+    "release:major": "standard-version --release-as major",
+    "release:patch": "standard-version --release-as patch",
     "prepublishOnly": "npm run validate && npm run build"
   },
   "keywords": [
@@ -65,6 +69,7 @@
     "fast-check": "^3.15.0",
     "jest": "^29.7.0",
     "prettier": "^3.1.1",
+    "standard-version": "^9.5.0",
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.3"
   },
