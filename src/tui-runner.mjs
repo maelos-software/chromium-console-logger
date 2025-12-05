@@ -288,13 +288,13 @@ export async function startTUI(config, CDPClient, LogWriter) {
     // Each component's height in lines:
     // Header: 6 lines (border + title + status + logfile + message + border)
     // Tabs panel: 4 + visible tabs (border + title + "All Tabs" + tabs + border), max 6 tabs shown
-    // Controls: 4 lines (border + 2 lines of text + border)
+    // Controls: 3 lines minimum (border + text + border), can grow if wrapping occurs
     // Margins: 2 (between components)
     const maxVisibleTabCount = 6;
     const visibleTabCount = Math.min(tabs.length, maxVisibleTabCount);
     const tabsPanelHeight = tabs.length === 0 ? 4 : 4 + visibleTabCount;
     const headerHeight = 6;
-    const controlsHeight = 4;
+    const controlsHeight = 3; // Minimum height, will grow if text wraps
     const margins = 2;
     const fixedHeight = headerHeight + tabsPanelHeight + controlsHeight + margins;
     
@@ -429,38 +429,34 @@ export async function startTUI(config, CDPClient, LogWriter) {
 
         {/* Controls */}
         <Box borderStyle="round" borderColor="gray" paddingX={1}>
-          <Box flexDirection="column">
-            <Box>
-              <Text bold color="cyan">[q]</Text>
-              <Text> Quit </Text>
-              <Text bold color="cyan">[p]</Text>
-              <Text> {paused ? 'Resume' : 'Pause'} </Text>
-              <Text bold color="cyan">[c]</Text>
-              <Text> Clear </Text>
-              <Text bold color="cyan">[l]</Text>
-              <Text> Level </Text>
-              <Text bold color="cyan">[t]</Text>
-              <Text> Tab Nav </Text>
-              <Text bold color="cyan">[a]</Text>
-              <Text> All </Text>
-              <Text bold color="cyan">[1-9]</Text>
-              <Text> Select</Text>
-            </Box>
-            <Box>
-              <Text bold color="cyan">[↑↓]</Text>
-              <Text> {viewMode === 'tabs' ? 'Navigate' : 'Scroll'} </Text>
-              <Text bold color="cyan">[PgUp/PgDn]</Text>
-              <Text> Page </Text>
-              {viewMode === 'tabs' && (
-                <>
-                  <Text bold color="cyan">[Enter]</Text>
-                  <Text> Confirm </Text>
-                </>
-              )}
-              {tabs.length > maxVisibleTabCount && viewMode === 'events' && (
-                <Text dimColor>(Press [t] to see all {tabs.length} tabs)</Text>
-              )}
-            </Box>
+          <Box flexWrap="wrap">
+            <Text bold color="cyan">[q]</Text>
+            <Text> Quit </Text>
+            <Text bold color="cyan">[p]</Text>
+            <Text> {paused ? 'Resume' : 'Pause'} </Text>
+            <Text bold color="cyan">[c]</Text>
+            <Text> Clear </Text>
+            <Text bold color="cyan">[l]</Text>
+            <Text> Level </Text>
+            <Text bold color="cyan">[t]</Text>
+            <Text> Tab Nav </Text>
+            <Text bold color="cyan">[a]</Text>
+            <Text> All </Text>
+            <Text bold color="cyan">[1-9]</Text>
+            <Text> Select </Text>
+            <Text bold color="cyan">[↑↓]</Text>
+            <Text> {viewMode === 'tabs' ? 'Navigate' : 'Scroll'} </Text>
+            <Text bold color="cyan">[PgUp/PgDn]</Text>
+            <Text> Page </Text>
+            {viewMode === 'tabs' && (
+              <>
+                <Text bold color="cyan">[Enter]</Text>
+                <Text> Confirm </Text>
+              </>
+            )}
+            {tabs.length > maxVisibleTabCount && viewMode === 'events' && (
+              <Text dimColor>(Press [t] to see all {tabs.length} tabs)</Text>
+            )}
           </Box>
         </Box>
       </Box>
