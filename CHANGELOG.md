@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.2](https://github.com/maelos-software/chromium-console-logger/compare/v1.1.1...v1.1.2) (2025-12-05)
+
+### Documentation
+
+- add publishing guide ([c7f40e0](https://github.com/maelos-software/chromium-console-logger/commit/c7f40e0bd7379e0ac387cb47b09d2be306ffde32))
+
 ### [1.1.1](https://github.com/maelos-software/chromium-console-logger/compare/v1.1.0...v1.1.1) (2025-12-05)
 
 ### Features
