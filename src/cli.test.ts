@@ -2,7 +2,7 @@ import { Command } from 'commander';
 
 describe('CLI', () => {
   /**
-   * Feature: vivaldi-console-capture, Property: CLI parsing
+   * Feature: chromium-console-logger, Property: CLI parsing
    * For any valid CLI arguments, the configuration should be parsed correctly.
    */
   describe('CLI argument parsing', () => {

@@ -2,7 +2,7 @@ import { CDPClient } from './cdpClient';
 
 describe('CDPClient', () => {
   /**
-   * Feature: vivaldi-console-capture, Property 1: Connection establishment with valid parameters
+   * Feature: chromium-console-logger, Property 1: Connection establishment with valid parameters
    * For any valid host and port combination where a CDP-enabled browser is listening,
    * the CDPClient should successfully establish a connection and emit a 'connected' event.
    *
@@ -44,7 +44,7 @@ describe('CDPClient', () => {
   });
 
   /**
-   * Feature: vivaldi-console-capture, Property 8: Target selection filters correctly
+   * Feature: chromium-console-logger, Property 8: Target selection filters correctly
    * For any set of available targets and a URL substring filter, the client should
    * connect to targets with URLs containing the specified substring.
    */
@@ -126,7 +126,7 @@ describe('CDPClient', () => {
   });
 
   /**
-   * Feature: vivaldi-console-capture, Property 9: Console event types are captured correctly
+   * Feature: chromium-console-logger, Property 9: Console event types are captured correctly
    * For any console method invocation (log, info, warn, error, debug, trace), the captured
    * event should have the event field set to "console" and the type field matching the
    * console method name.
@@ -196,7 +196,7 @@ describe('CDPClient', () => {
     });
 
     /**
-     * Feature: vivaldi-console-capture, Property 10: Exception events include stack traces
+     * Feature: chromium-console-logger, Property 10: Exception events include stack traces
      * For any uncaught exception in the browser, the captured event should have event field
      * set to "exception" and should include a stackTrace field when available from CDP.
      */

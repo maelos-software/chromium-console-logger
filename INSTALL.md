@@ -229,7 +229,14 @@ After installation, see:
 
 1. **Launch browser with CDP:**
    ```bash
+   # Vivaldi
    /Applications/Vivaldi.app/Contents/MacOS/Vivaldi --remote-debugging-port=9222
+   
+   # Or Chrome
+   /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222
+   
+   # Or Brave
+   /Applications/Brave\ Browser.app/Contents/MacOS/Brave\ Browser --remote-debugging-port=9222
    ```
 
 2. **Start capture with TUI:**

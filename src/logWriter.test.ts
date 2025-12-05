@@ -31,7 +31,7 @@ describe('LogWriter', () => {
   });
 
   /**
-   * Feature: vivaldi-console-capture, Property 2: Event serialization preserves structure
+   * Feature: chromium-console-logger, Property 2: Event serialization preserves structure
    * For any captured event, serializing to NDJSON and then parsing should produce an object
    * with all required fields (ts, event, type, url) present and of correct types.
    */
@@ -92,7 +92,7 @@ describe('LogWriter', () => {
   });
 
   /**
-   * Feature: vivaldi-console-capture, Property 4: Log rotation preserves data integrity
+   * Feature: chromium-console-logger, Property 4: Log rotation preserves data integrity
    * For any sequence of events written to a log file, when rotation occurs, all events
    * should be present across the current and rotated files with no duplicates or missing entries.
    */

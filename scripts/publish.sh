@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Publishing script for vivaldi-console-capture
+# Publishing script for chromium-console-logger
 
 set -e
 

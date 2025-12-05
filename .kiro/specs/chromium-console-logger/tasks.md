@@ -212,7 +212,7 @@
   - _Requirements: 2.4, 10.1, 10.2, 10.3, 10.4_
 
 - [x] 15. Create bin script
-  - Create bin/vivaldi-console-capture as executable shell script
+  - Create bin/chromium-console-logger as executable shell script
   - Add shebang: #!/usr/bin/env node
   - Require and execute dist/index.js
   - Make file executable (chmod +x)
@@ -229,7 +229,7 @@
   - _Requirements: 9.1, 9.2, 9.3_
 
 - [x] 17. Create helper scripts for macOS
-  - Create launch-vivaldi-with-cdp.command script
+  - Create launch-chromium-with-cdp.command script
   - Create start-logger.command script
   - Make scripts executable
   - Test scripts on macOS

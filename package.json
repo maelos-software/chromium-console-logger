@@ -37,8 +37,11 @@
     "chrome-devtools-protocol",
     "console",
     "logging",
-    "vivaldi",
+    "chromium",
     "chrome",
+    "vivaldi",
+    "brave",
+    "edge",
     "browser",
     "debugging"
   ],

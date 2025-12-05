@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Vivaldi Console Capture tool is a Node.js + TypeScript CLI application that connects to Chromium-based browsers via the Chrome DevTools Protocol (CDP) to capture console events and exceptions, streaming them to NDJSON log files with automatic reconnection and log rotation capabilities.
+The Chromium Console Logger is a Node.js + TypeScript CLI application that connects to Chromium-based browsers via the Chrome DevTools Protocol (CDP) to capture console events and exceptions, streaming them to NDJSON log files with automatic reconnection and log rotation capabilities.
 
 The tool is designed as a standalone developer utility that runs continuously in the background, providing reliable console capture even when the browser restarts. It uses the `chrome-remote-interface` library for CDP communication and implements robust error handling, exponential backoff reconnection, and configurable filtering.
 
@@ -357,47 +357,47 @@ The project will use **Jest** as the testing framework for unit tests. Unit test
 
 The project will use **fast-check** as the property-based testing library. Property-based tests will run a minimum of 100 iterations per test.
 
-Each property-based test will be tagged with a comment explicitly referencing the correctness property from this design document using the format: `**Feature: vivaldi-console-capture, Property {number}: {property_text}**`
+Each property-based test will be tagged with a comment explicitly referencing the correctness property from this design document using the format: `**Feature: chromium-console-logger, Property {number}: {property_text}**`
 
 **Property Test 1: Connection establishment**
 - Generate random valid host/port combinations
 - Verify connection succeeds when CDP endpoint is available
-- **Feature: vivaldi-console-capture, Property 1: Connection establishment with valid parameters**
+- **Feature: chromium-console-logger, Property 1: Connection establishment with valid parameters**
 
 **Property Test 2: Event serialization round-trip**
 - Generate random CapturedEvent objects
 - Serialize to NDJSON, parse back, verify structure
-- **Feature: vivaldi-console-capture, Property 2: Event serialization preserves structure**
+- **Feature: chromium-console-logger, Property 2: Event serialization preserves structure**
 
 **Property Test 3: Safe serialization**
 - Generate objects with circular references, functions, symbols
 - Verify safe serialization produces strings without errors
-- **Feature: vivaldi-console-capture, Property 3: Safe serialization handles non-serializable values**
+- **Feature: chromium-console-logger, Property 3: Safe serialization handles non-serializable values**
 
 **Property Test 4: Log rotation integrity**
 - Generate random sequences of events
 - Write with rotation enabled, verify all events present
-- **Feature: vivaldi-console-capture, Property 4: Log rotation preserves data integrity**
+- **Feature: chromium-console-logger, Property 4: Log rotation preserves data integrity**
 
 **Property Test 5: Event filtering**
 - Generate random events and filter configurations
 - Verify only matching events are written
-- **Feature: vivaldi-console-capture, Property 5: Event filtering respects configuration**
+- **Feature: chromium-console-logger, Property 5: Event filtering respects configuration**
 
 **Property Test 6: Target selection**
 - Generate random target lists and URL substrings
 - Verify correct target is selected or none if no match
-- **Feature: vivaldi-console-capture, Property 8: Target selection filters correctly**
+- **Feature: chromium-console-logger, Property 8: Target selection filters correctly**
 
 **Property Test 7: Console event type mapping**
 - Generate random console events with different types
 - Verify event and type fields are set correctly
-- **Feature: vivaldi-console-capture, Property 9: Console event types are captured correctly**
+- **Feature: chromium-console-logger, Property 9: Console event types are captured correctly**
 
 **Property Test 8: Exception event structure**
 - Generate random exception events
 - Verify event field is "exception" and stackTrace is included
-- **Feature: vivaldi-console-capture, Property 10: Exception events include stack traces**
+- **Feature: chromium-console-logger, Property 10: Exception events include stack traces**
 
 ### Integration Testing
 
@@ -410,7 +410,7 @@ Integration tests will verify end-to-end functionality:
 
 ### Manual Testing Checklist
 
-- Launch Vivaldi with `--remote-debugging-port=9222`
+- Launch a Chromium browser with `--remote-debugging-port=9222`
 - Run tool with default settings, verify connection
 - Execute `console.log("test")` in browser, verify NDJSON line appears
 - Execute `throw new Error("test")`, verify exception is captured
@@ -450,7 +450,7 @@ Integration tests will verify end-to-end functionality:
 
 **package.json**
 - Main entry: `dist/index.js`
-- Bin entry: `vivaldi-console-capture` → `bin/vivaldi-console-capture`
+- Bin entry: `chromium-console-logger` → `bin/chromium-console-logger`
 - Scripts: `build`, `test`, `lint`, `format`
 
 ### Reconnection Strategy

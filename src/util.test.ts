@@ -4,7 +4,7 @@ import { safeSerialize, calculateBackoff, formatTimestamp } from './util';
 describe('util', () => {
   describe('safeSerialize', () => {
     /**
-     * Feature: vivaldi-console-capture, Property 3: Safe serialization handles non-serializable values
+     * Feature: chromium-console-logger, Property 3: Safe serialization handles non-serializable values
      * For any console argument that cannot be directly serialized to JSON (circular references,
      * functions, symbols), the safe serialization function should produce a string representation
      * without throwing errors.

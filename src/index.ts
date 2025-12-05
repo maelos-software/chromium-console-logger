@@ -7,7 +7,7 @@ import { LogWriter } from './logWriter';
 import { CLIConfig } from './types';
 
 /**
- * Main entry point for the Vivaldi Console Capture CLI
+ * Main entry point for the Chromium Console Logger CLI
  */
 
 /**
@@ -115,7 +115,7 @@ async function main() {
   }
 
   if (config.verbose) {
-    console.log('Starting Vivaldi Console Capture with configuration:');
+    console.log('Starting Chromium Console Logger with configuration:');
     console.log(JSON.stringify(config, null, 2));
   }
 

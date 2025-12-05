@@ -28,7 +28,7 @@ describe('Graceful Shutdown', () => {
   });
 
   /**
-   * Feature: vivaldi-console-capture, Property 7: Graceful shutdown flushes all data
+   * Feature: chromium-console-logger, Property 7: Graceful shutdown flushes all data
    * For any state of the LogWriter with buffered data, calling flush() followed by close()
    * should result in all buffered events being written to disk before the file handle is closed.
    */

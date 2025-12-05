@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Start the Vivaldi Console Capture logger
+# Start the Chromium Console Logger
 # This script can be double-clicked in Finder to start the logger
 
 cd "$(dirname "$0")"
 
-echo "Starting Vivaldi Console Capture..."
+echo "Starting Chromium Console Logger..."
 echo "Press Ctrl+C to stop"
 echo ""
 
@@ -19,19 +19,19 @@ if ! command -v node &> /dev/null; then
 fi
 
 # Check if the tool is installed
-if [ ! -f "node_modules/.bin/vivaldi-console-capture" ] && ! command -v vivaldi-console-capture &> /dev/null; then
-    echo "Installing vivaldi-console-capture..."
+if [ ! -f "node_modules/.bin/chromium-console-logger" ] && ! command -v chromium-console-logger &> /dev/null; then
+    echo "Installing chromium-console-logger..."
     npm install
     echo ""
 fi
 
 # Start the logger with verbose output
-if [ -f "node_modules/.bin/vivaldi-console-capture" ]; then
-    ./node_modules/.bin/vivaldi-console-capture --verbose
-elif [ -f "bin/vivaldi-console-capture" ]; then
+if [ -f "node_modules/.bin/chromium-console-logger" ]; then
+    ./node_modules/.bin/chromium-console-logger --verbose
+elif [ -f "bin/chromium-console-logger" ]; then
     # Running from source
     npm run build
     node dist/index.js --verbose
 else
-    npx vivaldi-console-capture --verbose
+    npx chromium-console-logger --verbose
 fi

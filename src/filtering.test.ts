@@ -27,7 +27,7 @@ function shouldIncludeEvent(event: CapturedEvent, config: CLIConfig): boolean {
 
 describe('Event Filtering', () => {
   /**
-   * Feature: vivaldi-console-capture, Property 5: Event filtering respects configuration
+   * Feature: chromium-console-logger, Property 5: Event filtering respects configuration
    * For any event and filter configuration (includeConsole, includeExceptions, level),
    * an event should be written to the log file if and only if it matches the filter criteria.
    */

@@ -20,7 +20,7 @@ All code must be complete, runnable, and integrated.
 Build a standalone **local developer tool** called:
 
 ```
-vivaldi-console-capture
+chromium-console-logger
 ```
 
 This tool:
@@ -114,15 +114,15 @@ Use `Runtime.exceptionThrown` to capture full exception details.
 
 **Basic usage**
 ```
-npx vivaldi-console-capture
+npx chromium-console-logger
 ```
 
 **Examples**
 ```
-vivaldi-console-capture --verbose
-vivaldi-console-capture --log-file logs/out.ndjson
-vivaldi-console-capture --level error --level warn
-vivaldi-console-capture --target-url-substring myapp
+chromium-console-logger --verbose
+chromium-console-logger --log-file logs/out.ndjson
+chromium-console-logger --level error --level warn
+chromium-console-logger --target-url-substring myapp
 ```
 
 Verbose logs must include connection, reconnection, rotation, and attachment messages.
@@ -137,7 +137,7 @@ project-root/
   tsconfig.json
   README.md
   bin/
-    vivaldi-console-capture
+    chromium-console-logger
   src/
     index.ts
     cdpClient.ts
@@ -167,7 +167,7 @@ project-root/
 
 ### A. Functional
 - Running Vivaldi with `--remote-debugging-port=9222` +
-  running `vivaldi-console-capture` must reliably connect.
+  running `chromium-console-logger` must reliably connect.
 
 ### B. Event Capture
 Running this in DevTools:
@@ -222,7 +222,7 @@ Must include:
 The LLM must generate:
 
 1. A complete TypeScript project with all code implemented.
-2. A functioning CLI in `bin/vivaldi-console-capture`.
+2. A functioning CLI in `bin/chromium-console-logger`.
 3. A polished README.
 4. Two macOS helper scripts:
    - `launch-vivaldi-with-cdp.command`

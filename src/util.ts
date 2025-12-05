@@ -1,5 +1,5 @@
 /**
- * Utility functions for the Vivaldi Console Capture tool
+ * Utility functions for the Chromium Console Logger tool
  */
 
 /**

@@ -151,7 +151,7 @@ const App: React.FC<AppProps & { ink: any }> = ({ config, ink }) => {
       <Box borderStyle="round" borderColor="cyan" paddingX={2} paddingY={1}>
         <Box flexDirection="column" width="100%">
           <Text bold color="cyan">
-            🎯 Vivaldi Console Capture
+            🎯 Chromium Console Logger
           </Text>
           <Box marginTop={1}>
             <Text>

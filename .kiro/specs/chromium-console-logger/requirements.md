@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Vivaldi Console Capture tool is a standalone local developer tool that connects to Chromium-based browsers (Vivaldi, Chrome, Brave, Edge) via the Chrome DevTools Protocol (CDP) to capture JavaScript console events and uncaught exceptions, streaming them to a local NDJSON file with automatic reconnection capabilities.
+The Chromium Console Logger is a standalone local developer tool that connects to Chromium-based browsers (Chrome, Vivaldi, Brave, Edge) via the Chrome DevTools Protocol (CDP) to capture JavaScript console events and uncaught exceptions, streaming them to a local NDJSON file with automatic reconnection capabilities.
 
 ## Glossary
 
