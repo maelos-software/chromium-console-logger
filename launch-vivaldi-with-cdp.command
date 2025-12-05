@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Launch Vivaldi with Chrome DevTools Protocol enabled
+# This script can be double-clicked in Finder to launch Vivaldi with CDP
+
+echo "Launching Vivaldi with CDP on port 9222..."
+echo "Press Ctrl+C to stop"
+echo ""
+
+# Check if Vivaldi is installed
+if [ ! -d "/Applications/Vivaldi.app" ]; then
+    echo "Error: Vivaldi not found at /Applications/Vivaldi.app"
+    echo ""
+    echo "Please install Vivaldi or modify this script to point to your browser."
+    echo ""
+    echo "Alternatives:"
+    echo "  Chrome: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    echo "  Brave: /Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
+    echo "  Edge: /Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"
+    echo ""
+    read -p "Press Enter to exit..."
+    exit 1
+fi
+
+# Launch Vivaldi with remote debugging enabled
+/Applications/Vivaldi.app/Contents/MacOS/Vivaldi \
+    --remote-debugging-port=9222 \
+    --user-data-dir="$HOME/Library/Application Support/Vivaldi-CDP" \
+    > /dev/null 2>&1 &
+
+VIVALDI_PID=$!
+
+echo "Vivaldi launched with PID: $VIVALDI_PID"
+echo "CDP endpoint: http://127.0.0.1:9222"
+echo ""
+echo "You can now run the console capture tool:"
+echo "  npx vivaldi-console-capture"
+echo ""
+echo "Press Ctrl+C to stop Vivaldi..."
+
+# Wait for Ctrl+C
+trap "echo ''; echo 'Stopping Vivaldi...'; kill $VIVALDI_PID 2>/dev/null; exit 0" INT TERM
+
+# Keep script running
+wait $VIVALDI_PID
