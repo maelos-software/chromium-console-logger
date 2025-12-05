@@ -316,4 +316,128 @@ describe('CDPClient', () => {
       expect(client.isConnected()).toBe(false);
     });
   });
+
+  describe('error handling', () => {
+    it('should handle serializeRemoteObject with object containing only description', () => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      const remoteObject = { description: 'null' };
+      const result = (client as any).serializeRemoteObject(remoteObject);
+      expect(result).toBe('null');
+    });
+
+    it('should handle serializeRemoteObject with complex nested value', () => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      const remoteObject = { value: { nested: { deep: 'value' } } };
+      const result = (client as any).serializeRemoteObject(remoteObject);
+      expect(result).toEqual({ nested: { deep: 'value' } });
+    });
+
+    it('should handle disconnect when not connected', () => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      // Should not throw
+      expect(() => client.disconnect()).not.toThrow();
+    });
+
+    it('should handle multiple disconnect calls', () => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      // Should not throw
+      expect(() => {
+        client.disconnect();
+        client.disconnect();
+      }).not.toThrow();
+    });
+  });
+
+  describe('target filtering edge cases', () => {
+    it('should handle empty URL substring filter', () => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        targetUrlSubstring: '',
+        verbose: false,
+      });
+
+      // Empty string should match all URLs
+      expect(client).toBeDefined();
+    });
+
+    it('should handle tab indices with out-of-range values', () => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        tabIndices: [999, 1000],
+        verbose: false,
+      });
+
+      // Should not throw, just won't match any tabs
+      expect(client).toBeDefined();
+    });
+
+    it('should handle negative tab indices', () => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        tabIndices: [-1, 0],
+        verbose: false,
+      });
+
+      // Should not throw
+      expect(client).toBeDefined();
+    });
+
+    it('should handle both URL filter and tab indices together', () => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        targetUrlSubstring: 'example.com',
+        tabIndices: [1, 2],
+        verbose: false,
+      });
+
+      // Should create client with both filters
+      expect(client).toBeDefined();
+    });
+  });
+
+  describe('verbose mode', () => {
+    it('should create client with verbose mode enabled', () => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: true,
+      });
+
+      expect(client).toBeDefined();
+    });
+
+    it('should create client with verbose mode disabled', () => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      expect(client).toBeDefined();
+    });
+  });
 });

@@ -1,5 +1,6 @@
 import * as fc from 'fast-check';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { LogWriter } from './logWriter';
 import { CapturedEvent } from './types';
@@ -295,6 +296,157 @@ describe('LogWriter', () => {
       }
 
       expect(rotatedFiles.length).toBeLessThanOrEqual(rotateKeep);
+    });
+  });
+
+  describe('edge cases', () => {
+    let tmpDir: string;
+
+    beforeEach(() => {
+      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'logwriter-edge-'));
+    });
+
+    afterEach(() => {
+      if (fs.existsSync(tmpDir)) {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    it('should handle writing events with special characters', async () => {
+      const logFile = path.join(tmpDir, 'special-chars.ndjson');
+      const writer = new LogWriter({
+        logFile,
+        maxSizeBytes: 1024 * 1024,
+        rotateKeep: 3,
+        verbose: false,
+      });
+
+      const event = {
+        ts: Date.now(),
+        event: 'console' as const,
+        type: 'log' as const,
+        url: 'http://test.com',
+        args: ['Message with "quotes" and \n newlines \t tabs'],
+      };
+
+      writer.write(event);
+      await writer.flush();
+      await writer.close();
+
+      const content = fs.readFileSync(logFile, 'utf-8');
+      const parsed = JSON.parse(content.trim());
+      expect(parsed.args[0]).toContain('quotes');
+    });
+
+    it('should handle writing events with circular references', async () => {
+      const logFile = path.join(tmpDir, 'circular.ndjson');
+      const writer = new LogWriter({
+        logFile,
+        maxSizeBytes: 1024 * 1024,
+        rotateKeep: 3,
+        verbose: false,
+      });
+
+      const circular: any = { a: 1 };
+      circular.self = circular;
+
+      const event = {
+        ts: Date.now(),
+        event: 'console' as const,
+        type: 'log' as const,
+        url: 'http://test.com',
+        args: [circular],
+      };
+
+      // Should not throw
+      expect(() => writer.write(event)).not.toThrow();
+      await writer.flush();
+      await writer.close();
+    });
+
+    it('should handle empty args array', async () => {
+      const logFile = path.join(tmpDir, 'empty-args.ndjson');
+      const writer = new LogWriter({
+        logFile,
+        maxSizeBytes: 1024 * 1024,
+        rotateKeep: 3,
+        verbose: false,
+      });
+
+      const event = {
+        ts: Date.now(),
+        event: 'console' as const,
+        type: 'log' as const,
+        url: 'http://test.com',
+        args: [],
+      };
+
+      writer.write(event);
+      await writer.flush();
+      await writer.close();
+
+      const content = fs.readFileSync(logFile, 'utf-8');
+      const parsed = JSON.parse(content.trim());
+      expect(parsed.args).toEqual([]);
+    });
+
+    it('should handle very long messages', async () => {
+      const logFile = path.join(tmpDir, 'long-message.ndjson');
+      const writer = new LogWriter({
+        logFile,
+        maxSizeBytes: 1024 * 1024,
+        rotateKeep: 3,
+        verbose: false,
+      });
+
+      const longMessage = 'x'.repeat(10000);
+      const event = {
+        ts: Date.now(),
+        event: 'console' as const,
+        type: 'log' as const,
+        url: 'http://test.com',
+        args: [longMessage],
+      };
+
+      writer.write(event);
+      await writer.flush();
+      await writer.close();
+
+      const content = fs.readFileSync(logFile, 'utf-8');
+      const parsed = JSON.parse(content.trim());
+      expect(parsed.args[0].length).toBe(10000);
+    });
+
+    it('should handle exception events', async () => {
+      const logFile = path.join(tmpDir, 'exception.ndjson');
+      const writer = new LogWriter({
+        logFile,
+        maxSizeBytes: 1024 * 1024,
+        rotateKeep: 3,
+        verbose: false,
+      });
+
+      const event = {
+        ts: Date.now(),
+        event: 'exception' as const,
+        type: 'error' as const,
+        url: 'http://test.com',
+        exceptionDetails: {
+          text: 'Uncaught Error',
+          exception: {
+            description: 'Error: Something went wrong',
+          },
+        },
+      };
+
+      writer.write(event);
+      await writer.flush();
+      await writer.close();
+
+      const content = fs.readFileSync(logFile, 'utf-8');
+      const parsed = JSON.parse(content.trim());
+      expect(parsed.event).toBe('exception');
+      expect(parsed.exceptionDetails.text).toBe('Uncaught Error');
     });
   });
 });
