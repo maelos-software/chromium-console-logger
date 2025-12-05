@@ -4,7 +4,7 @@
   "description": "A standalone local developer tool that connects to Chromium-based browsers via CDP to capture console events and exceptions to NDJSON files",
   "main": "dist/index.js",
   "bin": {
-    "chromium-console-logger": "./bin/chromium-console-logger"
+    "chromium-console-logger": "bin/chromium-console-logger"
   },
   "files": [
     "dist",
@@ -13,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/maelos-software/chromium-console-logger.git"
+    "url": "git+https://github.com/maelos-software/chromium-console-logger.git"
   },
   "bugs": {
     "url": "https://github.com/maelos-software/chromium-console-logger/issues"
@@ -50,7 +50,7 @@
     "browser",
     "debugging"
   ],
-  "author": "",
+  "author": "Rafi Khardalian <rafi@maelos.com> (https://github.com/maelos-software)",
   "license": "MIT",
   "dependencies": {
     "@types/react": "^19.2.7",
