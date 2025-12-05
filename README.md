@@ -91,6 +91,12 @@ The tool will connect to your browser and start capturing console events to `bro
 # Start with Terminal UI (recommended)
 chromium-console-logger --tui
 
+# List all available browser tabs
+chromium-console-logger --list-tabs
+
+# Monitor only specific tabs (by index)
+chromium-console-logger --tabs 1,3,4
+
 # Headless mode with default settings
 chromium-console-logger
 
@@ -109,9 +115,61 @@ chromium-console-logger --host 192.168.1.100 --port 9223
 # Filter by target URL
 chromium-console-logger --target-url-substring myapp
 
-# Combine TUI with filters
-chromium-console-logger --tui --level error --level warn
+# Combine TUI with filters and specific tabs
+chromium-console-logger --tui --tabs 2,3 --level error --level warn
 ```
+
+### Tab Management
+
+**List Available Tabs:**
+```bash
+chromium-console-logger --list-tabs
+```
+
+This will display all open browser tabs with their indices, titles, URLs, and IDs:
+```
+Found 4 browser tab(s):
+
+[1] Breaking News, Latest News and Videos | CNN
+    URL: https://www.cnn.com/
+    ID:  686F8C3B6916D48FD7C8E1386FA80481
+
+[2] GitHub Repository
+    URL: https://github.com/user/repo
+    ID:  340D008EED3D48A570FADB53D3E45CC4
+...
+```
+
+**Monitor Specific Tabs:**
+```bash
+# Monitor only tabs 1 and 3
+chromium-console-logger --tabs 1,3
+
+# Use with TUI for interactive monitoring
+chromium-console-logger --tui --tabs 2,4
+```
+
+### Terminal UI (TUI) Controls
+
+When running with `--tui`, you have access to interactive controls:
+
+| Key | Action |
+|-----|--------|
+| `q` | Quit the application |
+| `p` | Pause/Resume event capture |
+| `c` | Clear the events display |
+| `t` | Toggle Tab Navigation mode |
+| `a` | Show all tabs (remove filter) |
+| `1-9` | Quickly select tab by number |
+| `↑↓` | Navigate tabs (in Tab Nav mode) or scroll events |
+| `Enter` | Confirm tab selection (in Tab Nav mode) |
+
+**Tab Navigation Mode:**
+- Press `t` to enter Tab Navigation mode (border turns yellow)
+- Use arrow keys to highlight different tabs
+- Press `Enter` to select the highlighted tab
+- The selected tab will be highlighted in cyan
+- Press `t` again to return to Events mode
 
 ### CLI Options
 
@@ -125,11 +183,24 @@ chromium-console-logger --tui --level error --level warn
 | `--level <string...>` | Console levels to capture (can specify multiple) | `[]` (all) |
 | `--verbose` | Enable verbose logging | `false` |
 | `--tui` | Enable Terminal UI mode | `false` |
+| `--list-tabs` | List all available browser tabs and exit | `false` |
+| `--tabs <numbers>` | Monitor only specific tabs by index (comma-separated) | - |
 | `--target-url-substring <string>` | Filter targets by URL substring | - |
 | `--max-size-bytes <number>` | Maximum log file size before rotation | `Infinity` |
 | `--rotate-keep <number>` | Number of rotated files to keep | `5` |
 
 ### Examples
+
+**List available tabs:**
+```bash
+chromium-console-logger --list-tabs
+```
+
+**Monitor specific tabs only:**
+```bash
+# Monitor tabs 1, 2, and 4
+chromium-console-logger --tabs 1,2,4
+```
 
 **Capture only errors and warnings:**
 ```bash
@@ -151,12 +222,18 @@ chromium-console-logger --include-console false
 chromium-console-logger --target-url-substring localhost:3000
 ```
 
+**Monitor specific tabs with TUI:**
+```bash
+chromium-console-logger --tui --tabs 2,3 --level error
+```
+
 **Full configuration example:**
 ```bash
 chromium-console-logger \
   --host 127.0.0.1 \
   --port 9222 \
   --log-file logs/app-console.ndjson \
+  --tabs 1,3 \
   --level error --level warn \
   --verbose \
   --target-url-substring myapp \
