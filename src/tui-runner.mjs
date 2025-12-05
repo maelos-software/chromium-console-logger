@@ -18,8 +18,22 @@ export async function startTUI(config, CDPClient, LogWriter) {
     const [paused, setPaused] = useState(false);
     const [statusMessage, setStatusMessage] = useState('Initializing...');
     const [scrollOffset, setScrollOffset] = useState(0);
+    const [terminalSize, setTerminalSize] = useState({
+      rows: process.stdout.rows || 24,
+      columns: process.stdout.columns || 80,
+    });
 
     useEffect(() => {
+      // Track terminal resize
+      const handleResize = () => {
+        setTerminalSize({
+          rows: process.stdout.rows || 24,
+          columns: process.stdout.columns || 80,
+        });
+      };
+
+      process.stdout.on('resize', handleResize);
+
       // Initialize components
       const cdpClient = new CDPClient({
         host: config.host,
@@ -90,6 +104,7 @@ export async function startTUI(config, CDPClient, LogWriter) {
 
       // Cleanup
       return () => {
+        process.stdout.off('resize', handleResize);
         cdpClient.disconnect();
         logWriter.flush();
         logWriter.close();
@@ -169,8 +184,10 @@ export async function startTUI(config, CDPClient, LogWriter) {
       : recentEvents;
 
     // Calculate visible events based on terminal height
-    const headerHeight = 8; // Approximate height of header + stats + controls
-    const maxVisibleEvents = Math.max(5, process.stdout.rows - headerHeight);
+    // Header (5 lines) + Tabs panel (3 + num tabs) + Controls (3) + borders/margins
+    const tabsPanelHeight = Math.min(tabs.length + 3, 13); // Cap at 13 lines
+    const fixedHeight = 5 + tabsPanelHeight + 3 + 6; // borders and margins
+    const maxVisibleEvents = Math.max(5, terminalSize.rows - fixedHeight);
     const visibleEvents = filteredEvents.slice(scrollOffset, scrollOffset + maxVisibleEvents);
 
     return (
@@ -212,7 +229,7 @@ export async function startTUI(config, CDPClient, LogWriter) {
                 </Text>
                 {tabs.slice(0, 9).map((tab, idx) => {
                   const isSelected = selectedTabId === tab.id;
-                  const title = truncateText(tab.title || tab.url, process.stdout.columns - 20);
+                  const title = truncateText(tab.title || tab.url, terminalSize.columns - 20);
                   return (
                     <Text key={tab.id}>
                       <Text bold color={isSelected ? 'cyan' : 'gray'}>
@@ -228,7 +245,14 @@ export async function startTUI(config, CDPClient, LogWriter) {
         </Box>
 
         {/* Events */}
-        <Box marginTop={1} borderStyle="round" borderColor="gray" paddingX={1} flexGrow={1}>
+        <Box
+          marginTop={1}
+          borderStyle="round"
+          borderColor="gray"
+          paddingX={1}
+          flexGrow={1}
+          minHeight={maxVisibleEvents + 2}
+        >
           <Box flexDirection="column" width="100%">
             <Text bold>
               Events {paused && <Text color="yellow">[PAUSED]</Text>}
@@ -245,10 +269,7 @@ export async function startTUI(config, CDPClient, LogWriter) {
               <Text dimColor>Waiting for events...</Text>
             ) : (
               visibleEvents.map((event, idx) => {
-                const { time, typeColor, typeLabel, message } = formatEvent(
-                  event,
-                  process.stdout.columns
-                );
+                const { time, typeColor, typeLabel, message } = formatEvent(event, terminalSize.columns);
                 return (
                   <Box key={scrollOffset + idx}>
                     <Text dimColor>{time}</Text>
@@ -295,5 +316,8 @@ export async function startTUI(config, CDPClient, LogWriter) {
     );
   };
 
-  render(<App />);
+  const { unmount, waitUntilExit } = render(<App />);
+  
+  // Return cleanup function
+  return { unmount, waitUntilExit };
 }
