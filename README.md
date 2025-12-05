@@ -1,6 +1,6 @@
 # Chromium Console Logger
 
-![CI](https://github.com/rmk40/chromium-console-logger/workflows/CI/badge.svg)
+![CI](https://github.com/maelos-software/chromium-console-logger/workflows/CI/badge.svg)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -60,21 +60,25 @@ npm install -g .
 Launch your Chromium-based browser with remote debugging enabled:
 
 **Vivaldi:**
+
 ```bash
 /Applications/Vivaldi.app/Contents/MacOS/Vivaldi --remote-debugging-port=9222
 ```
 
 **Chrome:**
+
 ```bash
 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222
 ```
 
 **Brave:**
+
 ```bash
 /Applications/Brave\ Browser.app/Contents/MacOS/Brave\ Browser --remote-debugging-port=9222
 ```
 
 **Edge:**
+
 ```bash
 /Applications/Microsoft\ Edge.app/Contents/MacOS/Microsoft\ Edge --remote-debugging-port=9222
 ```
@@ -126,11 +130,13 @@ chromium-console-logger --tui --tabs 2,3 --level error --level warn
 ### Tab Management
 
 **List Available Tabs:**
+
 ```bash
 chromium-console-logger --list-tabs
 ```
 
 This will display all open browser tabs with their indices, titles, URLs, and IDs:
+
 ```
 Found 4 browser tab(s):
 
@@ -145,6 +151,7 @@ Found 4 browser tab(s):
 ```
 
 **Monitor Specific Tabs:**
+
 ```bash
 # Monitor only tabs 1 and 3
 chromium-console-logger --tabs 1,3
@@ -157,18 +164,19 @@ chromium-console-logger --tui --tabs 2,4
 
 When running with `--tui`, you have access to interactive controls:
 
-| Key | Action |
-|-----|--------|
-| `q` | Quit the application |
-| `p` | Pause/Resume event capture |
-| `c` | Clear the events display |
-| `t` | Toggle Tab Navigation mode |
-| `a` | Show all tabs (remove filter) |
-| `1-9` | Quickly select tab by number |
-| `↑↓` | Navigate tabs (in Tab Nav mode) or scroll events |
-| `Enter` | Confirm tab selection (in Tab Nav mode) |
+| Key     | Action                                           |
+| ------- | ------------------------------------------------ |
+| `q`     | Quit the application                             |
+| `p`     | Pause/Resume event capture                       |
+| `c`     | Clear the events display                         |
+| `t`     | Toggle Tab Navigation mode                       |
+| `a`     | Show all tabs (remove filter)                    |
+| `1-9`   | Quickly select tab by number                     |
+| `↑↓`    | Navigate tabs (in Tab Nav mode) or scroll events |
+| `Enter` | Confirm tab selection (in Tab Nav mode)          |
 
 **Tab Navigation Mode:**
+
 - Press `t` to enter Tab Navigation mode (border turns yellow)
 - Use arrow keys to highlight different tabs
 - Press `Enter` to select the highlighted tab
@@ -177,61 +185,69 @@ When running with `--tui`, you have access to interactive controls:
 
 ### CLI Options
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--host <string>` | CDP host address | `127.0.0.1` |
-| `--port <number>` | CDP port number | `9222` |
-| `--log-file <path>` | Path to log file | `browser-console.ndjson` |
-| `--include-console <boolean>` | Include console events | `true` |
-| `--include-exceptions <boolean>` | Include exception events | `true` |
-| `--level <string...>` | Console levels to capture (can specify multiple) | `[]` (all) |
-| `--verbose` | Enable verbose logging | `false` |
-| `--tui` | Enable Terminal UI mode | `false` |
-| `--list-tabs` | List all available browser tabs and exit | `false` |
-| `--tabs <numbers>` | Monitor only specific tabs by index (comma-separated) | - |
-| `--target-url-substring <string>` | Filter targets by URL substring | - |
-| `--max-size-bytes <number>` | Maximum log file size before rotation | `Infinity` |
-| `--rotate-keep <number>` | Number of rotated files to keep | `5` |
+| Option                            | Description                                           | Default                  |
+| --------------------------------- | ----------------------------------------------------- | ------------------------ |
+| `--host <string>`                 | CDP host address                                      | `127.0.0.1`              |
+| `--port <number>`                 | CDP port number                                       | `9222`                   |
+| `--log-file <path>`               | Path to log file                                      | `browser-console.ndjson` |
+| `--include-console <boolean>`     | Include console events                                | `true`                   |
+| `--include-exceptions <boolean>`  | Include exception events                              | `true`                   |
+| `--level <string...>`             | Console levels to capture (can specify multiple)      | `[]` (all)               |
+| `--verbose`                       | Enable verbose logging                                | `false`                  |
+| `--tui`                           | Enable Terminal UI mode                               | `false`                  |
+| `--list-tabs`                     | List all available browser tabs and exit              | `false`                  |
+| `--tabs <numbers>`                | Monitor only specific tabs by index (comma-separated) | -                        |
+| `--target-url-substring <string>` | Filter targets by URL substring                       | -                        |
+| `--max-size-bytes <number>`       | Maximum log file size before rotation                 | `Infinity`               |
+| `--rotate-keep <number>`          | Number of rotated files to keep                       | `5`                      |
 
 ### Examples
 
 **List available tabs:**
+
 ```bash
 chromium-console-logger --list-tabs
 ```
 
 **Monitor specific tabs only:**
+
 ```bash
 # Monitor tabs 1, 2, and 4
 chromium-console-logger --tabs 1,2,4
 ```
 
 **Capture only errors and warnings:**
+
 ```bash
 chromium-console-logger --level error --level warn
 ```
 
 **Enable log rotation at 10MB:**
+
 ```bash
 chromium-console-logger --max-size-bytes 10000000 --rotate-keep 10
 ```
 
 **Capture only exceptions:**
+
 ```bash
 chromium-console-logger --include-console false
 ```
 
 **Filter by target URL:**
+
 ```bash
 chromium-console-logger --target-url-substring localhost:3000
 ```
 
 **Monitor specific tabs with TUI:**
+
 ```bash
 chromium-console-logger --tui --tabs 2,3 --level error
 ```
 
 **Full configuration example:**
+
 ```bash
 chromium-console-logger \
   --host 127.0.0.1 \
@@ -257,7 +273,7 @@ Each line in the log file is a valid JSON object representing a captured event.
   "event": "console",
   "type": "log",
   "url": "http://localhost:3000/app.js",
-  "args": ["User logged in", {"userId": 123}],
+  "args": ["User logged in", { "userId": 123 }],
   "stackTrace": {
     "callFrames": [
       {
@@ -303,15 +319,15 @@ Each line in the log file is a valid JSON object representing a captured event.
 
 ### Event Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `ts` | number | Timestamp in epoch milliseconds |
-| `event` | string | Event category: `"console"` or `"exception"` |
-| `type` | string | Event type: `"log"`, `"warn"`, `"error"`, `"info"`, `"debug"`, `"trace"`, or `"exception"` |
-| `url` | string | Source URL where the event occurred |
-| `args` | array | Console arguments (console events only) |
-| `stackTrace` | object | CDP StackTrace object (when available) |
-| `exceptionDetails` | object | Full exception details (exception events only) |
+| Field              | Type   | Description                                                                                |
+| ------------------ | ------ | ------------------------------------------------------------------------------------------ |
+| `ts`               | number | Timestamp in epoch milliseconds                                                            |
+| `event`            | string | Event category: `"console"` or `"exception"`                                               |
+| `type`             | string | Event type: `"log"`, `"warn"`, `"error"`, `"info"`, `"debug"`, `"trace"`, or `"exception"` |
+| `url`              | string | Source URL where the event occurred                                                        |
+| `args`             | array  | Console arguments (console events only)                                                    |
+| `stackTrace`       | object | CDP StackTrace object (when available)                                                     |
+| `exceptionDetails` | object | Full exception details (exception events only)                                             |
 
 ## Log Rotation
 
@@ -323,6 +339,7 @@ When `--max-size-bytes` is specified, the tool automatically rotates log files:
 4. A new log file is created
 
 Example with `--rotate-keep 3`:
+
 ```
 browser-console.ndjson      (current)
 browser-console.ndjson.1    (most recent rotation)
@@ -356,6 +373,7 @@ Press `Ctrl+C` to gracefully shut down the tool:
 **Problem**: The tool can't connect to the browser.
 
 **Solutions**:
+
 - Ensure the browser is running with `--remote-debugging-port=9222`
 - Check that no other process is using port 9222
 - Verify the host and port with `--host` and `--port` flags
@@ -366,6 +384,7 @@ Press `Ctrl+C` to gracefully shut down the tool:
 **Problem**: The tool can't find a page target to attach to.
 
 **Solutions**:
+
 - Open at least one tab in the browser
 - Check if `--target-url-substring` is too restrictive
 - Use `--verbose` to see available targets
@@ -375,6 +394,7 @@ Press `Ctrl+C` to gracefully shut down the tool:
 **Problem**: The tool can't write to the log file.
 
 **Solutions**:
+
 - Check file permissions in the target directory
 - Ensure sufficient disk space
 - Verify the path with `--log-file` is valid
@@ -384,6 +404,7 @@ Press `Ctrl+C` to gracefully shut down the tool:
 **Problem**: Console events or exceptions aren't appearing in the log.
 
 **Solutions**:
+
 - Check filter settings (`--include-console`, `--include-exceptions`, `--level`)
 - Verify the target URL matches with `--target-url-substring`
 - Use `--verbose` to see if events are being received
@@ -394,6 +415,7 @@ Press `Ctrl+C` to gracefully shut down the tool:
 **Problem**: The log file is consuming too much disk space.
 
 **Solutions**:
+
 - Enable log rotation with `--max-size-bytes`
 - Adjust `--rotate-keep` to control retention
 - Use level filtering to reduce event volume
@@ -452,7 +474,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for dev
 
 ```bash
 # Clone and install
-git clone https://github.com/rmk40/chromium-console-logger.git
+git clone https://github.com/maelos-software/chromium-console-logger.git
 cd chromium-console-logger
 npm install
 
@@ -466,6 +488,7 @@ npm run build
 ### CI/CD
 
 This project uses GitHub Actions for continuous integration:
+
 - ✅ Type checking with TypeScript
 - ✅ Linting with ESLint
 - ✅ Format checking with Prettier
@@ -476,4 +499,4 @@ All checks must pass before merging.
 
 ## Support
 
-For issues, questions, or feature requests, please [open an issue](https://github.com/rmk40/chromium-console-logger/issues) on GitHub.
+For issues, questions, or feature requests, please [open an issue](https://github.com/maelos-software/chromium-console-logger/issues) on GitHub.

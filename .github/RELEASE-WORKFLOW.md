@@ -3,6 +3,7 @@
 ## Daily Development
 
 1. **Make changes and commit** using conventional commits:
+
    ```bash
    git add .
    git commit -m "feat: add new feature"
@@ -28,6 +29,7 @@ git push --follow-tags origin main
 ```
 
 That's it! The version will be automatically determined based on your commit messages:
+
 - `fix:` commits → patch version (1.0.0 → 1.0.1)
 - `feat:` commits → minor version (1.0.0 → 1.1.0)
 - `feat!:` or `BREAKING CHANGE:` → major version (1.0.0 → 2.0.0)
@@ -81,6 +83,6 @@ npm publish
 
 ## View Releases
 
-- GitHub: https://github.com/rmk40/chromium-console-logger/releases
+- GitHub: https://github.com/maelos-software/chromium-console-logger/releases
 - Tags: `git tag -l`
 - Changelog: See `CHANGELOG.md`

@@ -9,9 +9,9 @@
     { "type": "perf", "section": "Performance Improvements" },
     { "type": "test", "hidden": true }
   ],
-  "commitUrlFormat": "https://github.com/rmk40/chromium-console-logger/commit/{{hash}}",
-  "compareUrlFormat": "https://github.com/rmk40/chromium-console-logger/compare/{{previousTag}}...{{currentTag}}",
-  "issueUrlFormat": "https://github.com/rmk40/chromium-console-logger/issues/{{id}}",
+  "commitUrlFormat": "https://github.com/maelos-software/chromium-console-logger/commit/{{hash}}",
+  "compareUrlFormat": "https://github.com/maelos-software/chromium-console-logger/compare/{{previousTag}}...{{currentTag}}",
+  "issueUrlFormat": "https://github.com/maelos-software/chromium-console-logger/issues/{{id}}",
   "userUrlFormat": "https://github.com/{{user}}",
   "releaseCommitMessageFormat": "chore(release): {{currentTag}}",
   "skip": {
