@@ -5,15 +5,16 @@ import { safeSerialize, calculateBackoff, sleep } from './util';
 
 /**
  * CDPClient manages the connection to Chrome DevTools Protocol
- * and captures console and exception events
+ * and captures console and exception events from multiple targets
  */
 export class CDPClient extends EventEmitter {
   private config: CDPClientConfig;
-  private client: any = null;
+  private clients: Map<string, any> = new Map(); // targetId -> client
   private connected: boolean = false;
   private reconnecting: boolean = false;
   private shouldReconnect: boolean = true;
   private reconnectAttempt: number = 0;
+  private currentTargets: Set<string> = new Set(); // Track connected target IDs
 
   constructor(config: CDPClientConfig) {
     super();
@@ -21,7 +22,7 @@ export class CDPClient extends EventEmitter {
   }
 
   /**
-   * Establishes connection to CDP and attaches to a target
+   * Establishes connections to CDP and attaches to all matching targets
    */
   async connect(): Promise<void> {
     try {
@@ -36,58 +37,32 @@ export class CDPClient extends EventEmitter {
       });
 
       // Emit all page targets for TUI
-      const pageTargets = targets.filter((t) => t.type === 'page');
+      const pageTargets = targets.filter((t: any) => t.type === 'page');
       this.emit('targets', pageTargets);
 
-      // Find appropriate target
-      const target = this.findTarget(targets);
+      // Find targets to connect to
+      const targetsToConnect = this.findTargets(targets);
       
-      if (!target) {
-        throw new Error('No suitable target found');
+      if (targetsToConnect.length === 0) {
+        throw new Error('No suitable targets found');
       }
 
       if (this.config.verbose) {
-        console.log(`Attaching to target: ${target.url}`);
+        console.log(`Attaching to ${targetsToConnect.length} target(s)...`);
       }
 
-      // Connect to the target
-      this.client = await CDP({
-        host: this.config.host,
-        port: this.config.port,
-        target: target.id,
-      });
-
-      // Enable Runtime domain
-      await this.client.Runtime.enable();
-
-      // Subscribe to console events
-      this.client.Runtime.consoleAPICalled(this.handleConsoleAPI.bind(this));
-
-      // Subscribe to exception events
-      this.client.Runtime.exceptionThrown(this.handleException.bind(this));
-
-      // Handle disconnection
-      this.client.on('disconnect', () => {
-        if (this.config.verbose) {
-          console.log('CDP connection lost');
-        }
-        this.connected = false;
-        this.emit('disconnected');
-        
-        if (this.shouldReconnect) {
-          this.reconnectWithBackoff();
-        }
-      });
+      // Connect to all targets
+      await this.connectToTargets(targetsToConnect);
 
       this.connected = true;
       this.reconnectAttempt = 0;
       this.emit('connected');
 
       if (this.config.verbose) {
-        console.log('Successfully connected to CDP');
+        console.log(`Successfully connected to ${this.clients.size} target(s)`);
       }
 
-      // Periodically refresh target list
+      // Periodically refresh target list and connect to new targets
       this.startTargetRefresh();
     } catch (error: any) {
       if (this.config.verbose) {
@@ -103,7 +78,81 @@ export class CDPClient extends EventEmitter {
   }
 
   /**
-   * Periodically refreshes the list of available targets
+   * Connects to multiple targets
+   */
+  private async connectToTargets(targets: any[]): Promise<void> {
+    const promises = targets.map((target) => this.connectToTarget(target));
+    await Promise.allSettled(promises);
+  }
+
+  /**
+   * Connects to a single target
+   */
+  private async connectToTarget(target: any): Promise<void> {
+    try {
+      // Skip if already connected
+      if (this.clients.has(target.id)) {
+        return;
+      }
+
+      if (this.config.verbose) {
+        console.log(`Connecting to target: ${target.url}`);
+      }
+
+      // Connect to the target
+      const client = await CDP({
+        host: this.config.host,
+        port: this.config.port,
+        target: target.id,
+      });
+
+      // Enable Runtime domain
+      await client.Runtime.enable();
+
+      // Subscribe to console events
+      client.Runtime.consoleAPICalled((params: any) => {
+        this.handleConsoleAPI(params, target);
+      });
+
+      // Subscribe to exception events
+      client.Runtime.exceptionThrown((params: any) => {
+        this.handleException(params, target);
+      });
+
+      // Handle disconnection
+      client.on('disconnect', () => {
+        if (this.config.verbose) {
+          console.log(`Target disconnected: ${target.url}`);
+        }
+        this.clients.delete(target.id);
+        this.currentTargets.delete(target.id);
+        
+        // If all clients disconnected, emit disconnected event
+        if (this.clients.size === 0) {
+          this.connected = false;
+          this.emit('disconnected');
+          
+          if (this.shouldReconnect) {
+            this.reconnectWithBackoff();
+          }
+        }
+      });
+
+      this.clients.set(target.id, client);
+      this.currentTargets.add(target.id);
+
+      if (this.config.verbose) {
+        console.log(`Connected to target: ${target.url}`);
+      }
+    } catch (error: any) {
+      if (this.config.verbose) {
+        console.error(`Failed to connect to target ${target.url}: ${error.message}`);
+      }
+    }
+  }
+
+  /**
+   * Periodically refreshes the list of available targets and connects to new ones
    */
   private targetRefreshInterval: NodeJS.Timeout | null = null;
 
@@ -123,8 +172,34 @@ export class CDPClient extends EventEmitter {
           port: this.config.port,
         });
 
-        const pageTargets = targets.filter((t) => t.type === 'page');
+        const pageTargets = targets.filter((t: any) => t.type === 'page');
         this.emit('targets', pageTargets);
+
+        // Find targets we should be connected to
+        const targetsToConnect = this.findTargets(targets);
+        
+        // Connect to any new targets
+        const newTargets = targetsToConnect.filter((t: any) => !this.currentTargets.has(t.id));
+        if (newTargets.length > 0) {
+          await this.connectToTargets(newTargets);
+        }
+
+        // Disconnect from targets that no longer match our filters
+        const targetIds = new Set(targetsToConnect.map((t: any) => t.id));
+        for (const [id, client] of this.clients.entries()) {
+          if (!targetIds.has(id)) {
+            if (this.config.verbose) {
+              console.log(`Disconnecting from target: ${id}`);
+            }
+            try {
+              await client.close();
+            } catch (error) {
+              // Ignore errors
+            }
+            this.clients.delete(id);
+            this.currentTargets.delete(id);
+          }
+        }
       } catch (error) {
         // Ignore errors during refresh
       }
@@ -132,49 +207,45 @@ export class CDPClient extends EventEmitter {
   }
 
   /**
-   * Finds an appropriate target to attach to
+   * Finds all targets to attach to based on filters
    * @param targets List of available targets
-   * @returns The selected target or null
+   * @returns Array of targets to connect to
    */
-  findTarget(targets: any[]): any | null {
+  private findTargets(targets: any[]): any[] {
     // Filter for page targets
-    const pageTargets = targets.filter((t) => t.type === 'page');
+    let pageTargets = targets.filter((t: any) => t.type === 'page');
 
     if (pageTargets.length === 0) {
-      return null;
+      return [];
     }
 
     // If tab indices are specified, filter by them
     if (this.config.tabIndices && this.config.tabIndices.length > 0) {
-      // Tab indices are 1-based, so we need to check if any match
-      const filtered = pageTargets.filter((t, idx) => 
+      pageTargets = pageTargets.filter((t: any, idx: number) => 
         this.config.tabIndices!.includes(idx + 1)
       );
-      return filtered.length > 0 ? filtered[0] : null;
     }
 
-    // If URL substring filter is specified, use it
+    // If URL substring filter is specified, apply it
     if (this.config.targetUrlSubstring) {
-      const filtered = pageTargets.filter((t) =>
+      pageTargets = pageTargets.filter((t: any) =>
         t.url.includes(this.config.targetUrlSubstring!)
       );
-      return filtered.length > 0 ? filtered[0] : null;
     }
 
-    // Otherwise, return the first page target
-    return pageTargets[0];
+    return pageTargets;
   }
 
   /**
    * Handles console API called events from CDP
    */
-  private handleConsoleAPI(params: any): void {
+  private handleConsoleAPI(params: any, target: any): void {
     try {
       const event: CapturedEvent = {
         ts: Date.now(),
         event: 'console',
         type: params.type,
-        url: params.stackTrace?.callFrames?.[0]?.url || 'unknown',
+        url: params.stackTrace?.callFrames?.[0]?.url || target.url || 'unknown',
         args: params.args.map((arg: any) => this.serializeRemoteObject(arg)),
         stackTrace: params.stackTrace,
       };
@@ -188,13 +259,13 @@ export class CDPClient extends EventEmitter {
   /**
    * Handles exception thrown events from CDP
    */
-  private handleException(params: any): void {
+  private handleException(params: any, target: any): void {
     try {
       const event: CapturedEvent = {
         ts: Date.now(),
         event: 'exception',
         type: 'exception',
-        url: params.exceptionDetails?.url || 'unknown',
+        url: params.exceptionDetails?.url || target.url || 'unknown',
         stackTrace: params.exceptionDetails?.stackTrace,
         exceptionDetails: params.exceptionDetails,
       };
@@ -256,7 +327,7 @@ export class CDPClient extends EventEmitter {
   }
 
   /**
-   * Disconnects from CDP
+   * Disconnects from all CDP targets
    */
   async disconnect(): Promise<void> {
     this.shouldReconnect = false;
@@ -267,15 +338,19 @@ export class CDPClient extends EventEmitter {
       this.targetRefreshInterval = null;
     }
     
-    if (this.client) {
+    // Disconnect all clients
+    const disconnectPromises = Array.from(this.clients.values()).map(async (client) => {
       try {
-        await this.client.close();
+        await client.close();
       } catch (error) {
         // Ignore errors during disconnect
       }
-      this.client = null;
-    }
+    });
 
+    await Promise.allSettled(disconnectPromises);
+    
+    this.clients.clear();
+    this.currentTargets.clear();
     this.connected = false;
   }
 
