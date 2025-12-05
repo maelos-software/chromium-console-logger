@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.1](https://github.com/maelos-software/chromium-console-logger/compare/v1.1.0...v1.1.1) (2025-12-05)
+
+### Features
+
+- add automated npm publishing with OIDC trusted publisher ([ef5b4f5](https://github.com/maelos-software/chromium-console-logger/commit/ef5b4f543de6c1aed7bd1cfaece01e8b8e2554b8))
+
 ## [1.1.0](https://github.com/maelos-software/chromium-console-logger/compare/v1.0.0...v1.1.0) (2025-12-05)
 
 ### Features
