@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { render, Box, Text, useInput, useApp } from 'ink';
+import path from 'path';
 
 export async function startTUI(config, CDPClient, LogWriter) {
   const App = () => {
+    // Get absolute path to log file
+    const absoluteLogPath = path.resolve(config.logFile);
     const { exit } = useApp();
     const [stats, setStats] = useState({
       totalEvents: 0,
@@ -134,11 +137,11 @@ export async function startTUI(config, CDPClient, LogWriter) {
         setSelectedTabId(null); // Show all tabs
         setHighlightedTabIndex(-1);
       } else if (input === 'l') {
-        // Cycle through log level filters: all -> error -> warn -> info -> debug -> all
+        // Cycle through log level filters: all -> error -> error+warn -> error+warn+info -> error+warn+info+debug -> all
         setLogLevelFilter((prev) => {
           if (prev.length === 0) return ['error'];
-          if (prev[0] === 'error') return ['error', 'warn'];
-          if (prev.length === 2 && prev[1] === 'warn') return ['error', 'warn', 'info'];
+          if (prev.length === 1 && prev[0] === 'error') return ['error', 'warn'];
+          if (prev.length === 2) return ['error', 'warn', 'info'];
           if (prev.length === 3) return ['error', 'warn', 'info', 'debug'];
           return []; // Back to all
         });
@@ -321,7 +324,7 @@ export async function startTUI(config, CDPClient, LogWriter) {
               {' | '}Exceptions: <Text color="red">{stats.exceptionEvents}</Text>
             </Text>
             <Text dimColor>
-              Log: <Text color="yellow">{config.logFile}</Text>
+              Log: <Text color="yellow">{absoluteLogPath}</Text>
               {logLevelFilter.length > 0 && (
                 <>
                   {' | '}Filter: <Text color="magenta">{logLevelFilter.join(', ')}</Text>
@@ -343,8 +346,10 @@ export async function startTUI(config, CDPClient, LogWriter) {
         >
           <Box flexDirection="column" width="100%">
             <Text bold color={viewMode === 'tabs' ? 'yellow' : 'magenta'}>
+              {tabScrollOffset > 0 && '↑ '}
               Monitored Tabs ({tabs.length})
               {tabs.length > maxVisibleTabCount && ` [${tabScrollOffset + 1}-${Math.min(tabScrollOffset + maxVisibleTabCount, tabs.length)}]`}
+              {tabScrollOffset + maxVisibleTabCount < tabs.length && ' ↓'}
               {viewMode === 'tabs' && ' ← NAV MODE'}
             </Text>
             {tabs.length === 0 ? (
@@ -471,6 +476,9 @@ export async function startTUI(config, CDPClient, LogWriter) {
                   </Text>{' '}
                   Confirm
                 </>
+              )}
+              {tabs.length > maxVisibleTabCount && viewMode === 'events' && (
+                <Text dimColor> (Press [t] to see all {tabs.length} tabs)</Text>
               )}
             </Text>
           </Box>
