@@ -11,6 +11,7 @@ This project uses GitHub Actions for continuous integration and deployment.
 Runs on every push to `main` and on all pull requests.
 
 **Test Job** - Runs on Node.js 16.x, 18.x, and 20.x:
+
 - Type checking with TypeScript
 - Linting with ESLint
 - Format checking with Prettier
@@ -18,6 +19,7 @@ Runs on every push to `main` and on all pull requests.
 - Coverage reporting to Codecov (Node 20.x only)
 
 **Build Job** - Runs after tests pass:
+
 - Builds the project
 - Verifies all build artifacts are present
 
@@ -41,6 +43,6 @@ npm test
 Add these to your README.md:
 
 ```markdown
-![CI](https://github.com/rmk40/chromium-console-logger/workflows/CI/badge.svg)
-[![codecov](https://codecov.io/gh/rmk40/chromium-console-logger/branch/main/graph/badge.svg)](https://codecov.io/gh/rmk40/chromium-console-logger)
+![CI](https://github.com/maelos-software/chromium-console-logger/workflows/CI/badge.svg)
+[![codecov](https://codecov.io/gh/maelos-software/chromium-console-logger/branch/main/graph/badge.svg)](https://codecov.io/gh/maelos-software/chromium-console-logger)
 ```

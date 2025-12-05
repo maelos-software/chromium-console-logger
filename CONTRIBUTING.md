@@ -12,7 +12,7 @@ Thank you for your interest in contributing! This document provides guidelines a
 2. **Clone and Install**
 
    ```bash
-   git clone https://github.com/rmk40/chromium-console-logger.git
+   git clone https://github.com/maelos-software/chromium-console-logger.git
    cd chromium-console-logger
    npm install
    ```

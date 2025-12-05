@@ -13,12 +13,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/rmk40/chromium-console-logger.git"
+    "url": "https://github.com/maelos-software/chromium-console-logger.git"
   },
   "bugs": {
-    "url": "https://github.com/rmk40/chromium-console-logger/issues"
+    "url": "https://github.com/maelos-software/chromium-console-logger/issues"
   },
-  "homepage": "https://github.com/rmk40/chromium-console-logger#readme",
+  "homepage": "https://github.com/maelos-software/chromium-console-logger#readme",
   "scripts": {
     "build": "tsc && npx esbuild src/tui-runner.mjs --bundle --platform=node --format=esm --outfile=dist/tui-runner.mjs --external:ink --external:react --loader:.mjs=jsx",
     "test": "jest",
