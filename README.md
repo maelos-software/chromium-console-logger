@@ -46,7 +46,7 @@ npx chromium-console-logger --tui
 ### Option 4: Install from Source
 
 ```bash
-git clone https://github.com/yourusername/chromium-console-logger.git
+git clone https://github.com/maelos-software/chromium-console-logger.git
 cd chromium-console-logger
 npm install
 npm run build
@@ -427,7 +427,7 @@ Press `Ctrl+C` to gracefully shut down the tool:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/chromium-console-logger.git
+git clone https://github.com/maelos-software/chromium-console-logger.git
 cd chromium-console-logger
 
 # Install dependencies
