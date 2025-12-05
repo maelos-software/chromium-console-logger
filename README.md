@@ -1,5 +1,9 @@
 # Chromium Console Logger
 
+![CI](https://github.com/rmk40/chromium-console-logger/workflows/CI/badge.svg)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A standalone local developer tool that connects to Chromium-based browsers (Vivaldi, Chrome, Brave, Edge) via the Chrome DevTools Protocol (CDP) to capture JavaScript console events and uncaught exceptions, streaming them to local NDJSON files with automatic reconnection and log rotation capabilities.
 
 ## Features
@@ -442,8 +446,34 @@ MIT
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
+
+### Development Setup
+
+```bash
+# Clone and install
+git clone https://github.com/rmk40/chromium-console-logger.git
+cd chromium-console-logger
+npm install
+
+# Run validation checks
+npm run validate  # Runs typecheck, lint, format check, and tests
+
+# Build
+npm run build
+```
+
+### CI/CD
+
+This project uses GitHub Actions for continuous integration:
+- ✅ Type checking with TypeScript
+- ✅ Linting with ESLint
+- ✅ Format checking with Prettier
+- ✅ Unit tests with Jest (70 tests)
+- ✅ Tested on Node.js 16.x, 18.x, and 20.x
+
+All checks must pass before merging.
 
 ## Support
 
-For issues, questions, or feature requests, please open an issue on GitHub.
+For issues, questions, or feature requests, please [open an issue](https://github.com/rmk40/chromium-console-logger/issues) on GitHub.
