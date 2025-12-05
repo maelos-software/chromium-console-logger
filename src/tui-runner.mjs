@@ -618,8 +618,11 @@ export async function startTUI(config, CDPClient, LogWriter) {
                   return (
                     <Box key={scrollOffset + idx} flexDirection="column" marginBottom={1}>
                       <Box backgroundColor={bgColor}>
-                        <Text color={showCursor ? "cyan" : "gray"}>{showCursor ? '▶' : ' '}</Text>
-                        <Text> </Text>
+                        {showCursor ? (
+                          <Text color="cyan">▶ </Text>
+                        ) : (
+                          <Text>  </Text>
+                        )}
                         <Text dimColor={!isSearchMatch && !isSelected}>{time}</Text>
                         <Text> </Text>
                         <Text color={tabColor}>{tabLabel}</Text>
@@ -645,8 +648,11 @@ export async function startTUI(config, CDPClient, LogWriter) {
                 // Normal mode - compact view
                 return (
                   <Box key={scrollOffset + idx} backgroundColor={bgColor}>
-                    <Text color={showCursor ? "cyan" : "gray"}>{showCursor ? '▶' : ' '}</Text>
-                    <Text> </Text>
+                    {showCursor ? (
+                      <Text color="cyan">▶ </Text>
+                    ) : (
+                      <Text>  </Text>
+                    )}
                     <Text dimColor={!isSearchMatch && !isSelected}>{time}</Text>
                     <Text> </Text>
                     <Text color={tabColor}>{tabLabel}</Text>
