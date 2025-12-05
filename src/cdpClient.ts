@@ -35,6 +35,10 @@ export class CDPClient extends EventEmitter {
         port: this.config.port,
       });
 
+      // Emit all page targets for TUI
+      const pageTargets = targets.filter((t) => t.type === 'page');
+      this.emit('targets', pageTargets);
+
       // Find appropriate target
       const target = this.findTarget(targets);
       
@@ -82,6 +86,9 @@ export class CDPClient extends EventEmitter {
       if (this.config.verbose) {
         console.log('Successfully connected to CDP');
       }
+
+      // Periodically refresh target list
+      this.startTargetRefresh();
     } catch (error: any) {
       if (this.config.verbose) {
         console.error(`Failed to connect to CDP: ${error.message}`);
@@ -93,6 +100,35 @@ export class CDPClient extends EventEmitter {
         throw error;
       }
     }
+  }
+
+  /**
+   * Periodically refreshes the list of available targets
+   */
+  private targetRefreshInterval: NodeJS.Timeout | null = null;
+
+  private startTargetRefresh(): void {
+    // Clear any existing interval
+    if (this.targetRefreshInterval) {
+      clearInterval(this.targetRefreshInterval);
+    }
+
+    // Refresh target list every 2 seconds
+    this.targetRefreshInterval = setInterval(async () => {
+      if (!this.connected) return;
+
+      try {
+        const targets = await CDP.List({
+          host: this.config.host,
+          port: this.config.port,
+        });
+
+        const pageTargets = targets.filter((t) => t.type === 'page');
+        this.emit('targets', pageTargets);
+      } catch (error) {
+        // Ignore errors during refresh
+      }
+    }, 2000);
   }
 
   /**
@@ -215,6 +251,12 @@ export class CDPClient extends EventEmitter {
    */
   async disconnect(): Promise<void> {
     this.shouldReconnect = false;
+    
+    // Clear target refresh interval
+    if (this.targetRefreshInterval) {
+      clearInterval(this.targetRefreshInterval);
+      this.targetRefreshInterval = null;
+    }
     
     if (this.client) {
       try {
