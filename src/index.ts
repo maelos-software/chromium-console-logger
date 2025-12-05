@@ -5,6 +5,14 @@ import CDP from 'chrome-remote-interface';
 import { CDPClient } from './cdpClient';
 import { LogWriter } from './logWriter';
 import { CLIConfig } from './types';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+// Read version from package.json
+const packageJson = JSON.parse(
+  readFileSync(join(__dirname, '../package.json'), 'utf-8')
+);
+const VERSION = packageJson.version;
 
 /**
  * Main entry point for the Chromium Console Logger CLI
@@ -53,7 +61,7 @@ const program = new Command();
 program
   .name('chromium-console-logger')
   .description('Capture browser console events and exceptions to NDJSON files via CDP')
-  .version('1.0.0')
+  .version(VERSION)
   .option('--host <string>', 'CDP host address', '127.0.0.1')
   .option('--port <number>', 'CDP port number', '9222')
   .option('--log-file <path>', 'Path to log file', 'browser-console.ndjson')

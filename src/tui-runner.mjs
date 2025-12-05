@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { render, Box, Text, useInput, useApp } from 'ink';
 import path from 'path';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Read version from package.json
+const packageJson = JSON.parse(
+  readFileSync(path.join(__dirname, '../package.json'), 'utf-8')
+);
+const VERSION = packageJson.version;
 
 export async function startTUI(config, CDPClient, LogWriter) {
   const App = () => {
@@ -527,7 +539,7 @@ export async function startTUI(config, CDPClient, LogWriter) {
         <Box borderStyle="round" borderColor="cyan" paddingX={1}>
           <Box flexDirection="column" width="100%">
             <Text bold color="cyan">
-              🎯 Chromium Console Logger
+              🎯 Chromium Console Logger <Text dimColor>v{VERSION}</Text>
             </Text>
             <Text>
               Status:{' '}
