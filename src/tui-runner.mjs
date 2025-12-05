@@ -614,11 +614,12 @@ export async function startTUI(config, CDPClient, LogWriter) {
                 
                 if (verboseMode) {
                   // Verbose mode - show full details inline
-                  const cursorChar = showCursor ? '▶' : ' ';
+                  // Unicode arrow ▶ takes 2 columns, so use extra space for non-selected
+                  const cursorText = showCursor ? '▶ ' : '  ';
                   return (
                     <Box key={scrollOffset + idx} flexDirection="column" marginBottom={1}>
                       <Box backgroundColor={bgColor}>
-                        <Text color={showCursor ? 'cyan' : 'gray'}>{cursorChar} </Text>
+                        <Text color={showCursor ? 'cyan' : 'gray'}>{cursorText}</Text>
                         <Text dimColor={!isSearchMatch && !isSelected}>{time}</Text>
                         <Text> </Text>
                         <Text color={tabColor}>{tabLabel}</Text>
@@ -642,10 +643,11 @@ export async function startTUI(config, CDPClient, LogWriter) {
                 }
                 
                 // Normal mode - compact view
-                const cursorChar = showCursor ? '▶' : ' ';
+                // Unicode arrow ▶ takes 2 columns, so use extra space for non-selected
+                const cursorText = showCursor ? '▶ ' : '  ';
                 return (
                   <Box key={scrollOffset + idx} backgroundColor={bgColor}>
-                    <Text color={showCursor ? 'cyan' : 'gray'}>{cursorChar} </Text>
+                    <Text color={showCursor ? 'cyan' : 'gray'}>{cursorText}</Text>
                     <Text dimColor={!isSearchMatch && !isSelected}>{time}</Text>
                     <Text> </Text>
                     <Text color={tabColor}>{tabLabel}</Text>
