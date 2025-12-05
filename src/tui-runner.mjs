@@ -187,8 +187,37 @@ export async function startTUI(config, CDPClient, LogWriter) {
 
       const typeLabel = event.type.toUpperCase().padEnd(9);
       
+      // Find which tab this event came from
+      let tabNumber = null;
+      let tabColor = 'gray';
+      if (event.url && event.url !== 'unknown') {
+        // Try to match by URL - check if event URL starts with tab URL or vice versa
+        const tabIndex = tabs.findIndex((tab) => {
+          if (!tab.url) return false;
+          // Extract domain/origin for comparison
+          try {
+            const eventUrlObj = new URL(event.url);
+            const tabUrlObj = new URL(tab.url);
+            // Match by origin (protocol + host)
+            return eventUrlObj.origin === tabUrlObj.origin;
+          } catch {
+            // Fallback to simple string matching
+            return event.url.includes(tab.url) || tab.url.includes(event.url);
+          }
+        });
+        
+        if (tabIndex !== -1) {
+          tabNumber = tabIndex + 1;
+          // Use different colors for different tabs
+          const colors = ['cyan', 'magenta', 'yellow', 'green', 'blue', 'red', 'white'];
+          tabColor = colors[tabIndex % colors.length];
+        }
+      }
+      
+      const tabLabel = tabNumber ? `[T${tabNumber}]` : '[T?]';
+      
       // Calculate available width for message
-      const usedWidth = time.length + typeLabel.length + 6; // 6 for spacing and brackets
+      const usedWidth = time.length + tabLabel.length + typeLabel.length + 8; // 8 for spacing and brackets
       const availableWidth = Math.max(40, terminalWidth - usedWidth - 10);
       const messageWidth = availableWidth;
 
@@ -203,7 +232,7 @@ export async function startTUI(config, CDPClient, LogWriter) {
       }
       message = truncateText(message, messageWidth);
 
-      return { time, typeColor, typeLabel, message };
+      return { time, typeColor, typeLabel, message, tabLabel, tabColor };
     };
 
     // Filter events by selected tab
@@ -215,10 +244,21 @@ export async function startTUI(config, CDPClient, LogWriter) {
       : recentEvents;
 
     // Calculate visible events based on terminal height
-    // Header (5 lines) + Tabs panel (3 + num tabs) + Controls (3) + borders/margins
-    const tabsPanelHeight = Math.min(tabs.length + 3, 13); // Cap at 13 lines
-    const fixedHeight = 5 + tabsPanelHeight + 3 + 6; // borders and margins
-    const maxVisibleEvents = Math.max(5, terminalSize.rows - fixedHeight);
+    // Each component's height in lines:
+    // Header: 5 lines (border + title + status + message + border)
+    // Tabs panel: 4 + visible tabs (border + title + "All Tabs" + tabs + border)
+    // Controls: 3 lines (border + text + border)
+    // Margins: 2 (between components)
+    const visibleTabCount = Math.min(tabs.length, 9);
+    const tabsPanelHeight = tabs.length === 0 ? 4 : 4 + visibleTabCount;
+    const headerHeight = 5;
+    const controlsHeight = 3;
+    const margins = 2;
+    const fixedHeight = headerHeight + tabsPanelHeight + controlsHeight + margins;
+    
+    // Events panel gets remaining space (minus 2 for its own borders)
+    const eventsPanelInnerHeight = Math.max(3, terminalSize.rows - fixedHeight - 2);
+    const maxVisibleEvents = eventsPanelInnerHeight - 1; // -1 for the "Events" header line
     const visibleEvents = filteredEvents.slice(scrollOffset, scrollOffset + maxVisibleEvents);
 
     return (
@@ -248,6 +288,8 @@ export async function startTUI(config, CDPClient, LogWriter) {
           borderStyle="round"
           borderColor={viewMode === 'tabs' ? 'yellow' : 'magenta'}
           paddingX={1}
+          height={tabsPanelHeight}
+          overflow="hidden"
         >
           <Box flexDirection="column" width="100%">
             <Text bold color={viewMode === 'tabs' ? 'yellow' : 'magenta'}>
@@ -289,10 +331,10 @@ export async function startTUI(config, CDPClient, LogWriter) {
           borderStyle="round"
           borderColor="gray"
           paddingX={1}
-          flexGrow={1}
-          minHeight={maxVisibleEvents + 2}
+          height={eventsPanelInnerHeight + 2}
+          overflow="hidden"
         >
-          <Box flexDirection="column" width="100%">
+          <Box flexDirection="column" width="100%" height={eventsPanelInnerHeight}>
             <Text bold>
               Events {paused && <Text color="yellow">[PAUSED]</Text>}
               {selectedTabId && <Text color="cyan"> [Filtered]</Text>}
@@ -308,10 +350,15 @@ export async function startTUI(config, CDPClient, LogWriter) {
               <Text dimColor>Waiting for events...</Text>
             ) : (
               visibleEvents.map((event, idx) => {
-                const { time, typeColor, typeLabel, message } = formatEvent(event, terminalSize.columns);
+                const { time, typeColor, typeLabel, message, tabLabel, tabColor } = formatEvent(
+                  event,
+                  terminalSize.columns
+                );
                 return (
                   <Box key={scrollOffset + idx}>
                     <Text dimColor>{time}</Text>
+                    <Text> </Text>
+                    <Text color={tabColor}>{tabLabel}</Text>
                     <Text> </Text>
                     <Text color={typeColor}>[{typeLabel}]</Text>
                     <Text> {message}</Text>
