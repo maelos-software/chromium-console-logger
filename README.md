@@ -1,10 +1,46 @@
 # Chromium Console Logger
 
+[![npm version](https://img.shields.io/npm/v/chromium-console-logger.svg)](https://www.npmjs.com/package/chromium-console-logger)
+[![npm downloads](https://img.shields.io/npm/dm/chromium-console-logger.svg)](https://www.npmjs.com/package/chromium-console-logger)
 ![CI](https://github.com/maelos-software/chromium-console-logger/workflows/CI/badge.svg)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A standalone local developer tool that connects to Chromium-based browsers (Vivaldi, Chrome, Brave, Edge) via the Chrome DevTools Protocol (CDP) to capture JavaScript console events and uncaught exceptions, streaming them to local NDJSON files with automatic reconnection and log rotation capabilities.
+> **Capture browser console logs and exceptions from any Chromium browser to local files. Perfect for debugging, monitoring, and analyzing client-side JavaScript in development.**
+
+A standalone CLI tool that connects to Chromium-based browsers (Chrome, Vivaldi, Brave, Edge) via the Chrome DevTools Protocol (CDP) to capture JavaScript console events and uncaught exceptions, streaming them to local NDJSON files with automatic reconnection and log rotation.
+
+**Why use this?**
+
+- 🔍 Debug production-like issues locally without browser DevTools open
+- 📊 Analyze console patterns across multiple tabs and sessions
+- 🔄 Automatic reconnection when browser restarts
+- 📝 Machine-readable NDJSON format for easy parsing and analysis
+- 🎯 Filter by log level, tab, or URL
+- 🖥️ Interactive Terminal UI for real-time monitoring
+
+## Quick Start
+
+```bash
+# Install globally
+npm install -g chromium-console-logger
+
+# Launch Chrome with remote debugging
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222
+
+# Start capturing with interactive UI
+chromium-console-logger --tui
+```
+
+That's it! All console logs and exceptions from your browser are now being captured to `browser-console.ndjson`.
+
+## Use Cases
+
+- **Local Development**: Capture logs from multiple tabs without keeping DevTools open
+- **Bug Reproduction**: Record console output during bug reproduction steps
+- **Performance Analysis**: Analyze console patterns and timing across sessions
+- **Automated Testing**: Capture browser logs during E2E test runs
+- **Client Debugging**: Monitor production-like scenarios locally
 
 ## Features
 
