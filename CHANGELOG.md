@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.3](https://github.com/maelos-software/chromium-console-logger/compare/v1.1.2...v1.1.3) (2025-12-06)
+
+### Bug Fixes
+
+- add NPM_TOKEN to publish workflow for authentication ([0e8c2f0](https://github.com/maelos-software/chromium-console-logger/commit/0e8c2f00f3249be7fdba950f22dc08d1c8693eb8))
+
+### Documentation
+
+- add npm token setup guide ([0780cb9](https://github.com/maelos-software/chromium-console-logger/commit/0780cb954ae66a81b7148dec4ddb960ce8ee17c5))
+
 ### [1.1.2](https://github.com/maelos-software/chromium-console-logger/compare/v1.1.1...v1.1.2) (2025-12-05)
 
 ### Documentation
