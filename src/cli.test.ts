@@ -116,6 +116,28 @@ describe('CLI', () => {
       expect(options.maxSizeBytes).toBe('1000000');
       expect(options.rotateKeep).toBe('10');
     });
+
+    it('should parse stdout flag', () => {
+      const program = new Command();
+
+      program.option('--stdout', 'Output logs to stdout instead of file', false);
+
+      program.parse(['node', 'test', '--stdout']);
+      const options = program.opts();
+
+      expect(options.stdout).toBe(true);
+    });
+
+    it('should parse tabs option', () => {
+      const program = new Command();
+
+      program.option('--tabs <numbers>', 'Monitor only specific tabs by index');
+
+      program.parse(['node', 'test', '--tabs', '1,2,4']);
+      const options = program.opts();
+
+      expect(options.tabs).toBe('1,2,4');
+    });
   });
 
   describe('Configuration building', () => {
@@ -171,6 +193,38 @@ describe('CLI', () => {
 
       expect(config.includeConsole).toBe(false);
       expect(config.includeExceptions).toBe(false);
+    });
+
+    it('should parse tabs into array of indices', () => {
+      const tabsString = '1,2,4';
+      const tabIndices = tabsString
+        .split(',')
+        .map((s: string) => parseInt(s.trim(), 10))
+        .filter((n: number) => !isNaN(n) && n > 0);
+
+      expect(tabIndices).toEqual([1, 2, 4]);
+    });
+
+    it('should handle invalid tab indices', () => {
+      const tabsString = '1,abc,3,-1,0';
+      const tabIndices = tabsString
+        .split(',')
+        .map((s: string) => parseInt(s.trim(), 10))
+        .filter((n: number) => !isNaN(n) && n > 0);
+
+      expect(tabIndices).toEqual([1, 3]);
+    });
+
+    it('should build config with stdout option', () => {
+      const options = {
+        stdout: true,
+      };
+
+      const config = {
+        stdout: options.stdout || false,
+      };
+
+      expect(config.stdout).toBe(true);
     });
   });
 });

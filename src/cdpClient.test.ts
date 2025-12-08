@@ -187,6 +187,9 @@ describe('CDPClient', () => {
         expect(event.ts).toBeGreaterThan(0);
         expect(event.url).toBeDefined();
         expect(event.args).toBeDefined();
+        expect(event.tab).toBeDefined();
+        expect(event.tab?.id).toBe('test-target-id');
+        expect(event.tab?.title).toBe('Test Page');
         done();
       });
 
@@ -222,6 +225,9 @@ describe('CDPClient', () => {
         expect(event.exceptionDetails).toBeDefined();
         expect(event.stackTrace).toBeDefined();
         expect(event.stackTrace.callFrames).toBeDefined();
+        expect(event.tab).toBeDefined();
+        expect(event.tab?.id).toBe('test-target-id');
+        expect(event.tab?.title).toBe('Test Page');
         done();
       });
 
@@ -445,6 +451,97 @@ describe('CDPClient', () => {
       });
 
       expect(client).toBeDefined();
+    });
+  });
+
+  describe('tab metadata', () => {
+    it('should include tab metadata in console events', (done) => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      const testTarget = {
+        id: 'unique-tab-id',
+        title: 'My Test Page',
+        url: 'http://example.com/',
+      };
+
+      client.on('event', (event) => {
+        expect(event.tab).toBeDefined();
+        expect(event.tab?.id).toBe('unique-tab-id');
+        expect(event.tab?.title).toBe('My Test Page');
+        done();
+      });
+
+      const params = {
+        type: 'log',
+        args: [{ value: 'test' }],
+        stackTrace: { callFrames: [] },
+      };
+
+      (client as any).handleConsoleAPI(params, testTarget);
+    });
+
+    it('should include tab metadata in exception events', (done) => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      const testTarget = {
+        id: 'exception-tab-id',
+        title: 'Error Page',
+        url: 'http://error.com/',
+      };
+
+      client.on('event', (event) => {
+        expect(event.tab).toBeDefined();
+        expect(event.tab?.id).toBe('exception-tab-id');
+        expect(event.tab?.title).toBe('Error Page');
+        done();
+      });
+
+      const params = {
+        exceptionDetails: {
+          url: 'http://error.com/script.js',
+          stackTrace: { callFrames: [] },
+          exception: { description: 'Error' },
+        },
+      };
+
+      (client as any).handleException(params, testTarget);
+    });
+
+    it('should handle empty tab title', (done) => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      const testTarget = {
+        id: 'no-title-tab',
+        title: '',
+        url: 'http://example.com/',
+      };
+
+      client.on('event', (event) => {
+        expect(event.tab).toBeDefined();
+        expect(event.tab?.id).toBe('no-title-tab');
+        expect(event.tab?.title).toBe('');
+        done();
+      });
+
+      const params = {
+        type: 'log',
+        args: [{ value: 'test' }],
+        stackTrace: { callFrames: [] },
+      };
+
+      (client as any).handleConsoleAPI(params, testTarget);
     });
   });
 });
