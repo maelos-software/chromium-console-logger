@@ -48,4 +48,5 @@ export interface CLIConfig {
   rotateKeep?: number;
   listTabs?: boolean;
   tabs?: number[]; // Tab indices to monitor (1-based)
+  stdout?: boolean; // Output logs to stdout instead of file
 }

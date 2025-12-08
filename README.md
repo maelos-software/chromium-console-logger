@@ -44,13 +44,13 @@ Monitor your browser console in real-time with a beautiful terminal interface:
 - **Keyboard navigation** - Full keyboard control for efficient debugging
 - **Pause/resume** - Control the flow of events
 
-### 🔧 Traditional Development Benefits
+### Traditional Development Benefits
 
-- 🔍 Debug production-like issues locally without browser DevTools open
-- 📊 Analyze console patterns across multiple tabs and sessions
-- 🔄 Automatic reconnection when browser restarts
-- 📝 Machine-readable NDJSON format for easy parsing and analysis
-- 🎯 Filter by log level, tab, or URL
+- Debug production-like issues locally without browser DevTools open
+- Analyze console patterns across multiple tabs and sessions
+- Automatic reconnection when browser restarts
+- Machine-readable NDJSON format for easy parsing and analysis
+- Filter by log level, tab, or URL
 
 ## Quick Start
 
@@ -98,22 +98,22 @@ The AI sees the exact console output, stack traces, and timing - no screenshots 
 
 ### Interactive Terminal UI
 
-- 🖥️ **Real-time Monitoring**: Beautiful terminal interface showing live console events
-- 🎨 **Syntax Highlighting**: Color-coded log levels and event types
-- 🔍 **Search & Filter**: Find specific messages instantly with built-in search
-- 📑 **Tab Management**: Monitor specific browser tabs or switch between them
-- ⌨️ **Keyboard Controls**: Full keyboard navigation (pause, clear, filter, search)
-- 📊 **Live Statistics**: See event counts and connection status at a glance
+- **Real-time Monitoring**: Beautiful terminal interface showing live console events
+- **Syntax Highlighting**: Color-coded log levels and event types
+- **Search & Filter**: Find specific messages instantly with built-in search
+- **Tab Management**: Monitor specific browser tabs or switch between them
+- **Keyboard Controls**: Full keyboard navigation (pause, clear, filter, search)
+- **Live Statistics**: See event counts and connection status at a glance
 
 ### Core Capabilities
 
-- 🔌 **CDP Integration**: Connects to any Chromium-based browser via Chrome DevTools Protocol
-- 📝 **NDJSON Logging**: Streams events to newline-delimited JSON files for easy parsing
-- 🤖 **AI-Friendly**: Perfect for LLM-assisted development - no more screenshot sharing
-- 🔄 **Auto-Reconnection**: Automatically reconnects when the browser restarts with exponential backoff
-- 📊 **Event Capture**: Captures all console methods (log, info, warn, error, debug, trace) and uncaught exceptions
-- 🎯 **Flexible Filtering**: Filter events by type, level, and target URL
-- 🔁 **Log Rotation**: Automatic log file rotation based on size with configurable retention
+- **CDP Integration**: Connects to any Chromium-based browser via Chrome DevTools Protocol
+- **NDJSON Logging**: Streams events to newline-delimited JSON files for easy parsing
+- **AI-Friendly**: Perfect for LLM-assisted development - no more screenshot sharing
+- **Auto-Reconnection**: Automatically reconnects when the browser restarts with exponential backoff
+- **Event Capture**: Captures all console methods (log, info, warn, error, debug, trace) and uncaught exceptions
+- **Flexible Filtering**: Filter events by type, level, and target URL
+- **Log Rotation**: Automatic log file rotation based on size with configurable retention
 
 ## Installation
 
@@ -317,6 +317,7 @@ The TUI makes it easy to spot errors and share context with your AI assistant. W
 | `--target-url-substring <string>` | Filter targets by URL substring                       | -                        |
 | `--max-size-bytes <number>`       | Maximum log file size before rotation                 | `Infinity`               |
 | `--rotate-keep <number>`          | Number of rotated files to keep                       | `5`                      |
+| `--stdout`                        | Output logs to stdout instead of file                 | `false`                  |
 
 ### Examples
 
@@ -363,6 +364,22 @@ chromium-console-logger --target-url-substring localhost:3000
 chromium-console-logger --tui --tabs 2,3 --level error
 ```
 
+**Output to stdout instead of file:**
+
+```bash
+# Stream logs to stdout (useful for piping)
+chromium-console-logger --stdout
+
+# Pipe to jq for filtering
+chromium-console-logger --stdout | jq 'select(.type == "error")'
+
+# Pipe to grep
+chromium-console-logger --stdout | grep "API error"
+
+# Save to custom location
+chromium-console-logger --stdout > /tmp/browser-logs.ndjson
+```
+
 **Full configuration example:**
 
 ```bash
@@ -376,6 +393,34 @@ chromium-console-logger \
   --target-url-substring myapp \
   --max-size-bytes 5000000 \
   --rotate-keep 5
+```
+
+## Advanced Features
+
+### Stdout Mode
+
+Output logs directly to stdout instead of a file. Perfect for:
+
+- Piping to other tools (jq, grep, awk)
+- Integration with log aggregation systems
+- Real-time processing
+- Custom log destinations
+
+```bash
+# Stream to stdout
+chromium-console-logger --stdout
+
+# Filter errors with jq
+chromium-console-logger --stdout | jq 'select(.type == "error")'
+
+# Search for specific messages
+chromium-console-logger --stdout | grep "authentication"
+
+# Count log types
+chromium-console-logger --stdout | jq -r '.type' | sort | uniq -c
+
+# Combine with other filters
+chromium-console-logger --stdout --level error --tabs 1,2
 ```
 
 ## NDJSON Output Format

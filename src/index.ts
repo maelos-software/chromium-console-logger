@@ -72,7 +72,8 @@ program
   .option('--tabs <numbers>', 'Monitor only specific tabs by index (comma-separated, e.g., 1,2,4)')
   .option('--target-url-substring <string>', 'Filter targets by URL substring')
   .option('--max-size-bytes <number>', 'Maximum log file size before rotation')
-  .option('--rotate-keep <number>', 'Number of rotated files to keep', '5');
+  .option('--rotate-keep <number>', 'Number of rotated files to keep', '5')
+  .option('--stdout', 'Output logs to stdout instead of file', false);
 
 program.parse();
 
@@ -101,6 +102,7 @@ const config: CLIConfig = {
   rotateKeep: parseInt(options.rotateKeep, 10),
   listTabs: options.listTabs,
   tabs: tabIndices,
+  stdout: options.stdout || false,
 };
 
 // Main function
@@ -134,12 +136,16 @@ async function main() {
     tabIndices: config.tabs,
   });
 
-  const logWriter = new LogWriter({
-    logFile: config.logFile,
-    maxSizeBytes: config.maxSizeBytes,
-    rotateKeep: config.rotateKeep,
-    verbose: config.verbose,
-  });
+  // Initialize log writer (unless stdout mode)
+  let logWriter: LogWriter | null = null;
+  if (!config.stdout) {
+    logWriter = new LogWriter({
+      logFile: config.logFile,
+      maxSizeBytes: config.maxSizeBytes,
+      rotateKeep: config.rotateKeep,
+      verbose: config.verbose,
+    });
+  }
 
   // Wire event handlers
   cdpClient.on('event', (event) => {
@@ -159,8 +165,12 @@ async function main() {
       }
     }
 
-    // Write event to log
-    logWriter.write(event);
+    // Output to stdout or file
+    if (config.stdout) {
+      console.log(JSON.stringify(event));
+    } else if (logWriter) {
+      logWriter.write(event);
+    }
   });
 
   cdpClient.on('connected', () => {
@@ -189,9 +199,11 @@ async function main() {
     }
 
     try {
-      // Flush and close log writer
-      await logWriter.flush();
-      await logWriter.close();
+      // Flush and close log writer (if not stdout mode)
+      if (logWriter) {
+        await logWriter.flush();
+        await logWriter.close();
+      }
 
       // Disconnect CDP client
       await cdpClient.disconnect();
