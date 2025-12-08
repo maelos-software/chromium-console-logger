@@ -3,7 +3,8 @@
 [![npm version](https://img.shields.io/npm/v/chromium-console-logger.svg)](https://www.npmjs.com/package/chromium-console-logger)
 [![npm downloads](https://img.shields.io/npm/dm/chromium-console-logger.svg)](https://www.npmjs.com/package/chromium-console-logger)
 ![CI](https://github.com/maelos-software/chromium-console-logger/workflows/CI/badge.svg)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
+[![codecov](https://codecov.io/gh/maelos-software/chromium-console-logger/branch/main/graph/badge.svg)](https://codecov.io/gh/maelos-software/chromium-console-logger)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **Capture browser console logs and exceptions from any Chromium browser to local files. Perfect for debugging, LLM-assisted development, and analyzing client-side JavaScript.**
