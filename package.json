@@ -22,7 +22,7 @@
   "scripts": {
     "build": "tsc && npx esbuild src/tui-runner.mjs --bundle --platform=node --format=esm --outfile=dist/tui-runner.mjs --external:ink --external:react --loader:.mjs=jsx",
     "test": "jest",
-    "test:coverage": "jest --coverage --collectCoverageFrom='src/**/*.ts' --collectCoverageFrom='!src/**/*.test.ts' --collectCoverageFrom='!src/**/*.d.ts'",
+    "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
