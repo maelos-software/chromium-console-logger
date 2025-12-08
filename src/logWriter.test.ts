@@ -551,6 +551,37 @@ describe('LogWriter', () => {
       expect(parsed.tab.title).toBe('Test Tab');
     });
 
+    it('should log rotation messages in verbose mode', async () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      const logFile = path.join(tmpDir, 'verbose-rotation.ndjson');
+      const writer = new LogWriter({
+        logFile,
+        maxSizeBytes: 50,
+        rotateKeep: 2,
+        verbose: true,
+      });
+
+      // Write enough to trigger rotation
+      for (let i = 0; i < 3; i++) {
+        writer.write({
+          ts: Date.now(),
+          event: 'console',
+          type: 'log',
+          url: 'http://test.com',
+          args: ['test message that is long enough'],
+        });
+      }
+
+      await writer.flush();
+      await writer.close();
+
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Rotating log file'));
+      expect(consoleSpy).toHaveBeenCalledWith('Log rotation complete');
+
+      consoleSpy.mockRestore();
+    });
+
     it('should handle close when already closed', async () => {
       const logFile = path.join(tmpDir, 'double-close.ndjson');
       const writer = new LogWriter({

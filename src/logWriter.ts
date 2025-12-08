@@ -37,11 +37,14 @@ export class LogWriter {
         encoding: 'utf8',
       });
 
+      /* istanbul ignore next - file system error handler */
       this.fileHandle.on('error', (error) => {
         console.error(`Error writing to log file: ${error.message}`);
       });
     } catch (error: any) {
+      /* istanbul ignore next - file system error with process.exit */
       console.error(`Failed to open log file ${this.config.logFile}: ${error.message}`);
+      /* istanbul ignore next */
       process.exit(1);
     }
   }
@@ -126,7 +129,9 @@ export class LogWriter {
         console.log(`Log rotation complete`);
       }
     } catch (error: any) {
+      /* istanbul ignore next - file system error during rotation */
       console.error(`Error during log rotation: ${error.message}`);
+      /* istanbul ignore next */
       // Try to reopen the file even if rotation failed
       if (!this.fileHandle) {
         this.openFile();

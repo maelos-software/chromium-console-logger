@@ -636,8 +636,21 @@ describe('CDPClient', () => {
   });
 
   describe('connection with mocked CDP', () => {
+    let clients: CDPClient[] = [];
+
     beforeEach(() => {
       jest.clearAllMocks();
+      jest.useFakeTimers();
+      clients = [];
+    });
+
+    afterEach(async () => {
+      // Clean up all clients to clear intervals
+      for (const client of clients) {
+        await client.disconnect();
+      }
+      clients = [];
+      jest.useRealTimers();
     });
 
     it('should successfully connect to CDP and emit connected event', async () => {
@@ -664,6 +677,7 @@ describe('CDPClient', () => {
         port: 9222,
         verbose: false,
       });
+      clients.push(client);
 
       const connectedPromise = new Promise((resolve) => {
         client.on('connected', resolve);
@@ -674,8 +688,6 @@ describe('CDPClient', () => {
 
       expect(CDP.List).toHaveBeenCalledWith({ host: '127.0.0.1', port: 9222 });
       expect(client.isConnected()).toBe(true);
-
-      await client.disconnect();
     });
 
     it('should handle connection failure', async () => {
@@ -718,6 +730,7 @@ describe('CDPClient', () => {
         targetUrlSubstring: 'example',
         verbose: false,
       });
+      clients.push(client);
 
       await client.connect();
 
@@ -728,8 +741,6 @@ describe('CDPClient', () => {
         port: 9222,
         target: 'target-2',
       });
-
-      await client.disconnect();
     });
 
     it('should filter targets by tab indices', async () => {
@@ -758,13 +769,12 @@ describe('CDPClient', () => {
         tabIndices: [1, 3], // 1-based indices
         verbose: false,
       });
+      clients.push(client);
 
       await client.connect();
 
       // Should connect to target-1 and target-3
       expect(CDP).toHaveBeenCalledTimes(2);
-
-      await client.disconnect();
     });
 
     it('should handle no suitable targets found', async () => {
@@ -804,6 +814,7 @@ describe('CDPClient', () => {
         port: 9222,
         verbose: false,
       });
+      clients.push(client);
 
       await client.connect();
       expect(client.isConnected()).toBe(true);
@@ -837,6 +848,7 @@ describe('CDPClient', () => {
         port: 9222,
         verbose: false,
       });
+      clients.push(client);
 
       const targetsPromise = new Promise((resolve) => {
         client.on('targets', resolve);
@@ -848,8 +860,522 @@ describe('CDPClient', () => {
       // Should only emit page targets
       expect(emittedTargets).toHaveLength(1);
       expect((emittedTargets as any)[0].type).toBe('page');
+    });
 
+    it('should log verbose messages when verbose is enabled', async () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const mockTargets = [
+        { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+      ];
+
+      (CDP.List as jest.Mock).mockResolvedValue(mockTargets);
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: true,
+      });
+      clients.push(client);
+
+      await client.connect();
+
+      expect(consoleSpy).toHaveBeenCalledWith('Connecting to CDP at 127.0.0.1:9222...');
+      expect(consoleSpy).toHaveBeenCalledWith('Attaching to 1 target(s)...');
+      expect(consoleSpy).toHaveBeenCalledWith('Connecting to target: http://test1.com');
+      expect(consoleSpy).toHaveBeenCalledWith('Connected to target: http://test1.com');
+      expect(consoleSpy).toHaveBeenCalledWith('Successfully connected to 1 target(s)');
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should log verbose error messages on connection failure', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      (CDP.List as jest.Mock).mockRejectedValue(new Error('Connection refused'));
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: true,
+      });
+
+      (client as any).shouldReconnect = false;
+
+      await expect(client.connect()).rejects.toThrow('Connection refused');
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to connect to CDP: Connection refused');
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should handle target disconnection and emit disconnected event', async () => {
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const mockTargets = [
+        { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+      ];
+
+      (CDP.List as jest.Mock).mockResolvedValue(mockTargets);
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: true,
+      });
+
+      const disconnectedPromise = new Promise((resolve) => {
+        client.on('disconnected', resolve);
+      });
+
+      await client.connect();
+
+      // Simulate disconnect by calling the disconnect handler
+      const disconnectHandler = mockClient.on.mock.calls.find(
+        (call) => call[0] === 'disconnect'
+      )?.[1];
+      expect(disconnectHandler).toBeDefined();
+
+      // Disable reconnection for this test
+      (client as any).shouldReconnect = false;
+
+      disconnectHandler();
+
+      await disconnectedPromise;
+      expect(client.isConnected()).toBe(false);
+    });
+
+    it('should skip already connected targets', async () => {
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const mockTargets = [
+        { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+      ];
+
+      (CDP.List as jest.Mock).mockResolvedValue(mockTargets);
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+      clients.push(client);
+
+      await client.connect();
+
+      // Try to connect to the same target again
+      await (client as any).connectToTarget(mockTargets[0]);
+
+      // Should only have been called once during initial connect
+      expect(CDP).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle target connection failure gracefully', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const mockTargets = [
+        { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+      ];
+
+      (CDP.List as jest.Mock).mockResolvedValue(mockTargets);
+      (CDP as any as jest.Mock).mockRejectedValue(new Error('Target connection failed'));
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: true,
+      });
+
+      // Should not throw, just log error
+      await client.connect();
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Failed to connect to target http://test1.com: Target connection failed'
+      );
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should handle reconnection with backoff', async () => {
+      let callCount = 0;
+      (CDP.List as jest.Mock).mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.reject(new Error('Connection failed'));
+        }
+        return Promise.resolve([
+          { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+        ]);
+      });
+
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+      clients.push(client);
+
+      const connectedPromise = new Promise((resolve) => {
+        client.on('connected', resolve);
+      });
+
+      // Start connection (will fail first time)
+      const connectPromise = client.connect();
+
+      // Fast-forward through backoff delays
+      await jest.advanceTimersByTimeAsync(200);
+
+      await connectPromise;
+      await connectedPromise;
+
+      expect(client.isConnected()).toBe(true);
+      expect(callCount).toBeGreaterThan(1);
+    });
+
+    it('should refresh targets periodically', async () => {
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      let listCallCount = 0;
+      (CDP.List as jest.Mock).mockImplementation(() => {
+        listCallCount++;
+        if (listCallCount === 1) {
+          return Promise.resolve([
+            { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+          ]);
+        }
+        // Second call adds a new target
+        return Promise.resolve([
+          { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+          { id: 'target-2', type: 'page', url: 'http://test2.com', title: 'Test 2' },
+        ]);
+      });
+
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+      clients.push(client);
+
+      await client.connect();
+
+      // Fast-forward past the refresh interval (2 seconds)
+      await jest.advanceTimersByTimeAsync(2100);
+
+      // Should have called List twice (initial + refresh)
+      expect(listCallCount).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should handle errors during target refresh gracefully', async () => {
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      let listCallCount = 0;
+      (CDP.List as jest.Mock).mockImplementation(() => {
+        listCallCount++;
+        if (listCallCount === 1) {
+          return Promise.resolve([
+            { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+          ]);
+        }
+        // Second call fails
+        return Promise.reject(new Error('Refresh failed'));
+      });
+
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+      clients.push(client);
+
+      await client.connect();
+
+      // Fast-forward past the refresh interval
+      await jest.advanceTimersByTimeAsync(2100);
+
+      // Should still be connected despite refresh error
+      expect(client.isConnected()).toBe(true);
+    });
+
+    it('should disconnect targets that no longer match filters during refresh', async () => {
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      let listCallCount = 0;
+      (CDP.List as jest.Mock).mockImplementation(() => {
+        listCallCount++;
+        if (listCallCount === 1) {
+          // Initial: two targets
+          return Promise.resolve([
+            { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+            { id: 'target-2', type: 'page', url: 'http://test2.com', title: 'Test 2' },
+          ]);
+        }
+        // Refresh: only one target remains
+        return Promise.resolve([
+          { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+        ]);
+      });
+
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: true,
+      });
+      clients.push(client);
+
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      await client.connect();
+
+      // Fast-forward past the refresh interval
+      await jest.advanceTimersByTimeAsync(2100);
+
+      // Should have logged disconnection
+      expect(consoleSpy).toHaveBeenCalledWith('Disconnecting from target: target-2');
+      expect(mockClient.close).toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle target disconnection with verbose logging', async () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const mockTargets = [
+        { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+      ];
+
+      (CDP.List as jest.Mock).mockResolvedValue(mockTargets);
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: true,
+      });
+      clients.push(client);
+
+      await client.connect();
+
+      // Simulate disconnect by calling the disconnect handler
+      const disconnectHandler = mockClient.on.mock.calls.find(
+        (call) => call[0] === 'disconnect'
+      )?.[1];
+
+      // Disable reconnection for this test
+      (client as any).shouldReconnect = false;
+
+      disconnectHandler();
+
+      expect(consoleSpy).toHaveBeenCalledWith('Target disconnected: http://test1.com');
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should trigger reconnection when all targets disconnect', async () => {
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      let connectCount = 0;
+      (CDP.List as jest.Mock).mockImplementation(() => {
+        connectCount++;
+        return Promise.resolve([
+          { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+        ]);
+      });
+
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+      clients.push(client);
+
+      await client.connect();
+
+      // Simulate disconnect
+      const disconnectHandler = mockClient.on.mock.calls.find(
+        (call) => call[0] === 'disconnect'
+      )?.[1];
+
+      disconnectHandler();
+
+      // Fast-forward through reconnection backoff
+      await jest.advanceTimersByTimeAsync(200);
+
+      // Should have attempted to reconnect
+      expect(connectCount).toBeGreaterThan(1);
+    });
+
+    it('should not refresh targets when not connected', async () => {
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      let listCallCount = 0;
+      (CDP.List as jest.Mock).mockImplementation(() => {
+        listCallCount++;
+        return Promise.resolve([
+          { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+        ]);
+      });
+
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+      clients.push(client);
+
+      await client.connect();
+      const initialCount = listCallCount;
+
+      // Disconnect
       await client.disconnect();
+
+      // Fast-forward past refresh interval
+      await jest.advanceTimersByTimeAsync(2100);
+
+      // Should not have called List again after disconnect
+      expect(listCallCount).toBe(initialCount);
+    });
+
+    it('should handle close errors during target disconnection', async () => {
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockRejectedValue(new Error('Close failed')),
+      };
+
+      let listCallCount = 0;
+      (CDP.List as jest.Mock).mockImplementation(() => {
+        listCallCount++;
+        if (listCallCount === 1) {
+          return Promise.resolve([
+            { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+          ]);
+        }
+        // Target removed
+        return Promise.resolve([]);
+      });
+
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+      clients.push(client);
+
+      await client.connect();
+
+      // Fast-forward past refresh interval
+      await jest.advanceTimersByTimeAsync(2100);
+
+      // Should handle the error gracefully (no throw)
+      expect(client.isConnected()).toBe(true);
     });
   });
 });

@@ -1,5 +1,5 @@
 import * as fc from 'fast-check';
-import { safeSerialize, calculateBackoff, formatTimestamp } from './util';
+import { safeSerialize, calculateBackoff, formatTimestamp, sleep } from './util';
 
 describe('util', () => {
   describe('safeSerialize', () => {
@@ -73,6 +73,36 @@ describe('util', () => {
       expect(safeSerialize(obj)).toEqual(obj);
       expect(safeSerialize(arr)).toEqual(arr);
     });
+
+    it('should handle values that fail JSON.stringify and String conversion', () => {
+      // Create an object that throws on both JSON.stringify and String()
+      const problematic = {
+        toJSON() {
+          throw new Error('toJSON error');
+        },
+        toString() {
+          throw new Error('toString error');
+        },
+      };
+
+      const result = safeSerialize(problematic);
+      expect(result).toBe('[Unserializable]');
+    });
+
+    it('should handle values that fail JSON.stringify but succeed with String', () => {
+      // Create an object that throws on JSON.stringify but works with String
+      const obj = {
+        toJSON() {
+          throw new Error('toJSON error');
+        },
+        toString() {
+          return 'custom string';
+        },
+      };
+
+      const result = safeSerialize(obj);
+      expect(result).toBe('custom string');
+    });
   });
 
   describe('calculateBackoff', () => {
@@ -133,6 +163,26 @@ describe('util', () => {
         }),
         { numRuns: 100 }
       );
+    });
+  });
+
+  describe('sleep', () => {
+    it('should resolve after specified milliseconds', async () => {
+      const start = Date.now();
+      await sleep(50);
+      const elapsed = Date.now() - start;
+
+      // Allow some tolerance for timing
+      expect(elapsed).toBeGreaterThanOrEqual(45);
+      expect(elapsed).toBeLessThan(100);
+    });
+
+    it('should resolve immediately for 0ms', async () => {
+      const start = Date.now();
+      await sleep(0);
+      const elapsed = Date.now() - start;
+
+      expect(elapsed).toBeLessThan(10);
     });
   });
 });
