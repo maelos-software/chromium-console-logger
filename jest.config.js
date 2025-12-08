@@ -16,12 +16,12 @@ module.exports = {
     '!src/playwrightReporter.ts', // Playwright reporter - on separate branch
   ],
   coverageDirectory: 'coverage',
-  coverageThresholds: {
+  coverageThreshold: {
     global: {
-      statements: 45,
-      branches: 40,
-      functions: 45,
-      lines: 45,
+      statements: 65,
+      branches: 50,
+      functions: 70,
+      lines: 65,
     },
   },
   verbose: true,

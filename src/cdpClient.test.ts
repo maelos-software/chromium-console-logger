@@ -1,4 +1,8 @@
 import { CDPClient } from './cdpClient';
+import CDP from 'chrome-remote-interface';
+
+// Mock CDP module
+jest.mock('chrome-remote-interface');
 
 // Mock target for testing
 const mockTarget = {
@@ -628,6 +632,224 @@ describe('CDPClient', () => {
       };
 
       (client as any).handleConsoleAPI(params, incompleteTarget);
+    });
+  });
+
+  describe('connection with mocked CDP', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should successfully connect to CDP and emit connected event', async () => {
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const mockTargets = [
+        { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+        { id: 'target-2', type: 'page', url: 'http://test2.com', title: 'Test 2' },
+      ];
+
+      (CDP.List as jest.Mock).mockResolvedValue(mockTargets);
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      const connectedPromise = new Promise((resolve) => {
+        client.on('connected', resolve);
+      });
+
+      await client.connect();
+      await connectedPromise;
+
+      expect(CDP.List).toHaveBeenCalledWith({ host: '127.0.0.1', port: 9222 });
+      expect(client.isConnected()).toBe(true);
+
+      await client.disconnect();
+    });
+
+    it('should handle connection failure', async () => {
+      (CDP.List as jest.Mock).mockRejectedValue(new Error('Connection refused'));
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      // Disable reconnection for this test
+      (client as any).shouldReconnect = false;
+
+      await expect(client.connect()).rejects.toThrow('Connection refused');
+    });
+
+    it('should filter targets by URL substring', async () => {
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const mockTargets = [
+        { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+        { id: 'target-2', type: 'page', url: 'http://example.com', title: 'Example' },
+      ];
+
+      (CDP.List as jest.Mock).mockResolvedValue(mockTargets);
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        targetUrlSubstring: 'example',
+        verbose: false,
+      });
+
+      await client.connect();
+
+      // Should only connect to target-2
+      expect(CDP).toHaveBeenCalledTimes(1);
+      expect(CDP).toHaveBeenCalledWith({
+        host: '127.0.0.1',
+        port: 9222,
+        target: 'target-2',
+      });
+
+      await client.disconnect();
+    });
+
+    it('should filter targets by tab indices', async () => {
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const mockTargets = [
+        { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+        { id: 'target-2', type: 'page', url: 'http://test2.com', title: 'Test 2' },
+        { id: 'target-3', type: 'page', url: 'http://test3.com', title: 'Test 3' },
+      ];
+
+      (CDP.List as jest.Mock).mockResolvedValue(mockTargets);
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        tabIndices: [1, 3], // 1-based indices
+        verbose: false,
+      });
+
+      await client.connect();
+
+      // Should connect to target-1 and target-3
+      expect(CDP).toHaveBeenCalledTimes(2);
+
+      await client.disconnect();
+    });
+
+    it('should handle no suitable targets found', async () => {
+      (CDP.List as jest.Mock).mockResolvedValue([]);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      (client as any).shouldReconnect = false;
+
+      await expect(client.connect()).rejects.toThrow('No suitable targets found');
+    });
+
+    it('should disconnect all clients', async () => {
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const mockTargets = [
+        { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+      ];
+
+      (CDP.List as jest.Mock).mockResolvedValue(mockTargets);
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      await client.connect();
+      expect(client.isConnected()).toBe(true);
+
+      await client.disconnect();
+      expect(client.isConnected()).toBe(false);
+      expect(mockClient.close).toHaveBeenCalled();
+    });
+
+    it('should emit targets event with page targets', async () => {
+      const mockClient = {
+        Runtime: {
+          enable: jest.fn().mockResolvedValue(undefined),
+          consoleAPICalled: jest.fn(),
+          exceptionThrown: jest.fn(),
+        },
+        on: jest.fn(),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const mockTargets = [
+        { id: 'target-1', type: 'page', url: 'http://test1.com', title: 'Test 1' },
+        { id: 'target-2', type: 'other', url: 'http://test2.com', title: 'Test 2' },
+      ];
+
+      (CDP.List as jest.Mock).mockResolvedValue(mockTargets);
+      (CDP as any as jest.Mock).mockResolvedValue(mockClient);
+
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      const targetsPromise = new Promise((resolve) => {
+        client.on('targets', resolve);
+      });
+
+      await client.connect();
+      const emittedTargets = await targetsPromise;
+
+      // Should only emit page targets
+      expect(emittedTargets).toHaveLength(1);
+      expect((emittedTargets as any)[0].type).toBe('page');
+
+      await client.disconnect();
     });
   });
 });
