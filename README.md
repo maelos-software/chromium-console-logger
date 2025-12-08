@@ -419,6 +419,18 @@ chromium-console-logger --stdout | grep "authentication"
 # Count log types
 chromium-console-logger --stdout | jq -r '.type' | sort | uniq -c
 
+# Filter logs from a specific tab by title
+chromium-console-logger --stdout | jq 'select(.tab.title == "My App - Dashboard")'
+
+# Group errors by tab
+chromium-console-logger --stdout | jq -r 'select(.type == "error") | .tab.title' | sort | uniq -c
+
+# Get all unique tab titles
+chromium-console-logger --stdout | jq -r '.tab.title' | sort -u
+
+# Filter by tab ID
+chromium-console-logger --stdout | jq 'select(.tab.id == "E4E5E5E5E5E5E5E5E5E5E5E5E5E5E5E5")'
+
 # Combine with other filters
 chromium-console-logger --stdout --level error --tabs 1,2
 ```
