@@ -6,18 +6,51 @@
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **Capture browser console logs and exceptions from any Chromium browser to local files. Perfect for debugging, monitoring, and analyzing client-side JavaScript in development.**
+> **Capture browser console logs and exceptions from any Chromium browser to local files. Perfect for debugging, LLM-assisted development, and analyzing client-side JavaScript.**
 
 A standalone CLI tool that connects to Chromium-based browsers (Chrome, Vivaldi, Brave, Edge) via the Chrome DevTools Protocol (CDP) to capture JavaScript console events and uncaught exceptions, streaming them to local NDJSON files with automatic reconnection and log rotation.
 
-**Why use this?**
+## Why Use This?
+
+### 🤖 Perfect for LLM-Assisted Development
+
+When coding with AI assistants like Claude, ChatGPT, or Cursor, you no longer need to:
+
+- Take screenshots of browser console errors
+- Copy-paste log messages back and forth
+- Describe what you're seeing in the console
+
+Instead, your AI coding assistant can **directly read the console logs** from the NDJSON file. This eliminates round trips and lets the AI see exactly what's happening in your browser in real-time.
+
+**Example workflow:**
+
+```bash
+# Start capturing console logs
+chromium-console-logger --tui
+
+# In your AI chat:
+"Check browser-console.ndjson - there's an error when I click the submit button"
+```
+
+The AI can now see the exact error, stack trace, and context without you having to manually relay the information.
+
+### 🖥️ Interactive Terminal UI
+
+Monitor your browser console in real-time with a beautiful terminal interface:
+
+- **Live event stream** - See console logs and errors as they happen
+- **Tab filtering** - Focus on specific browser tabs
+- **Search & filter** - Find specific log messages instantly
+- **Keyboard navigation** - Full keyboard control for efficient debugging
+- **Pause/resume** - Control the flow of events
+
+### 🔧 Traditional Development Benefits
 
 - 🔍 Debug production-like issues locally without browser DevTools open
 - 📊 Analyze console patterns across multiple tabs and sessions
 - 🔄 Automatic reconnection when browser restarts
 - 📝 Machine-readable NDJSON format for easy parsing and analysis
 - 🎯 Filter by log level, tab, or URL
-- 🖥️ Interactive Terminal UI for real-time monitoring
 
 ## Quick Start
 
@@ -28,13 +61,32 @@ npm install -g chromium-console-logger
 # Launch Chrome with remote debugging
 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222
 
-# Start capturing with interactive UI
+# Start capturing with interactive Terminal UI
 chromium-console-logger --tui
 ```
 
-That's it! All console logs and exceptions from your browser are now being captured to `browser-console.ndjson`.
+That's it! All console logs and exceptions from your browser are now being captured to `browser-console.ndjson` and displayed in a beautiful interactive terminal interface.
+
+### Using with AI Coding Assistants
+
+Once running, your AI assistant can read the log file directly:
+
+```
+# In your AI chat (Claude, ChatGPT, Cursor, etc.):
+"Read browser-console.ndjson and help me debug the authentication error"
+```
+
+The AI sees the exact console output, stack traces, and timing - no screenshots or copy-pasting needed!
 
 ## Use Cases
+
+### AI-Assisted Development
+
+- **LLM Pair Programming**: Let your AI assistant (Claude, ChatGPT, Cursor) read console logs directly
+- **Faster Debugging**: Eliminate screenshot/copy-paste round trips when working with AI
+- **Context Sharing**: Give your AI the full browser console context automatically
+
+### Traditional Development
 
 - **Local Development**: Capture logs from multiple tabs without keeping DevTools open
 - **Bug Reproduction**: Record console output during bug reproduction steps
@@ -44,13 +96,24 @@ That's it! All console logs and exceptions from your browser are now being captu
 
 ## Features
 
+### Interactive Terminal UI
+
+- 🖥️ **Real-time Monitoring**: Beautiful terminal interface showing live console events
+- 🎨 **Syntax Highlighting**: Color-coded log levels and event types
+- 🔍 **Search & Filter**: Find specific messages instantly with built-in search
+- 📑 **Tab Management**: Monitor specific browser tabs or switch between them
+- ⌨️ **Keyboard Controls**: Full keyboard navigation (pause, clear, filter, search)
+- 📊 **Live Statistics**: See event counts and connection status at a glance
+
+### Core Capabilities
+
 - 🔌 **CDP Integration**: Connects to any Chromium-based browser via Chrome DevTools Protocol
 - 📝 **NDJSON Logging**: Streams events to newline-delimited JSON files for easy parsing
+- 🤖 **AI-Friendly**: Perfect for LLM-assisted development - no more screenshot sharing
 - 🔄 **Auto-Reconnection**: Automatically reconnects when the browser restarts with exponential backoff
 - 📊 **Event Capture**: Captures all console methods (log, info, warn, error, debug, trace) and uncaught exceptions
 - 🎯 **Flexible Filtering**: Filter events by type, level, and target URL
 - 🔁 **Log Rotation**: Automatic log file rotation based on size with configurable retention
-- 🛠️ **CLI Interface**: Simple command-line interface with extensive configuration options
 
 ## Installation
 
@@ -196,15 +259,29 @@ chromium-console-logger --tabs 1,3
 chromium-console-logger --tui --tabs 2,4
 ```
 
-### Terminal UI (TUI) Controls
+### Terminal UI (TUI) Mode
 
-When running with `--tui`, you have access to interactive controls:
+The interactive Terminal UI provides a powerful, real-time view of your browser console:
+
+**Features:**
+
+- **Live Event Stream**: See console logs, warnings, errors, and exceptions as they happen
+- **Color-Coded Events**: Different colors for log levels (info, warn, error, etc.)
+- **Tab Filtering**: Monitor specific browser tabs or all tabs at once
+- **Search Functionality**: Find specific log messages with `/` search
+- **Pause/Resume**: Control the flow of events without stopping capture
+- **Event Details**: View full stack traces and exception details
+- **Statistics**: Real-time counts of events by type and level
+
+**Keyboard Controls:**
 
 | Key     | Action                                           |
 | ------- | ------------------------------------------------ |
 | `q`     | Quit the application                             |
 | `p`     | Pause/Resume event capture                       |
 | `c`     | Clear the events display                         |
+| `/`     | Search for specific text in events               |
+| `v`     | Toggle verbose mode (show full event details)    |
 | `t`     | Toggle Tab Navigation mode                       |
 | `a`     | Show all tabs (remove filter)                    |
 | `1-9`   | Quickly select tab by number                     |
@@ -218,6 +295,10 @@ When running with `--tui`, you have access to interactive controls:
 - Press `Enter` to select the highlighted tab
 - The selected tab will be highlighted in cyan
 - Press `t` again to return to Events mode
+
+**Perfect for AI-Assisted Development:**
+
+The TUI makes it easy to spot errors and share context with your AI assistant. When you see an error in the TUI, simply tell your AI to read the log file - it will see the same events you're seeing in real-time.
 
 ### CLI Options
 
