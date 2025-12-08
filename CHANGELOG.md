@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/maelos-software/chromium-console-logger/compare/v1.1.3...v1.2.0) (2025-12-08)
+
+### Features
+
+- add stdout mode for piping logs to other tools ([4d3e83c](https://github.com/maelos-software/chromium-console-logger/commit/4d3e83cda83b74e3540e82b3e26da02eae62f9ad))
+- add tab metadata (id and title) to captured events ([3f858cc](https://github.com/maelos-software/chromium-console-logger/commit/3f858cc2b059223bf26b78d7098312300bad60bd))
+
+### Documentation
+
+- add jq examples for filtering by tab metadata ([3eabd65](https://github.com/maelos-software/chromium-console-logger/commit/3eabd659100f7e32e7d043cf38c1aa0396a5f884))
+- highlight TUI features and LLM-assisted development use case ([de422ce](https://github.com/maelos-software/chromium-console-logger/commit/de422ce9729fca3b3aaaa204461517d97afd4c19))
+- improve README discoverability and add promotion strategy ([5cd2659](https://github.com/maelos-software/chromium-console-logger/commit/5cd26592f5cf36998e0c65ebc4b14e11a7ba0506))
+
 ### [1.1.3](https://github.com/maelos-software/chromium-console-logger/compare/v1.1.2...v1.1.3) (2025-12-06)
 
 ### Bug Fixes
