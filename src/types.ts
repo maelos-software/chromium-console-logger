@@ -20,6 +20,11 @@ export interface CapturedEvent {
   stackTrace?: any; // CDP StackTrace object if available
   args?: any[]; // Console arguments (for console events)
   exceptionDetails?: any; // Full exception details (for exceptions)
+  tab?: {
+    // Tab metadata
+    id: string; // CDP target ID
+    title: string; // Page title
+  };
 }
 
 /**

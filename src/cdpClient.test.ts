@@ -1,5 +1,12 @@
 import { CDPClient } from './cdpClient';
 
+// Mock target for testing
+const mockTarget = {
+  id: 'test-target-id',
+  title: 'Test Page',
+  url: 'http://test.com/',
+};
+
 describe('CDPClient', () => {
   /**
    * Feature: chromium-console-logger, Property 1: Connection establishment with valid parameters
@@ -154,7 +161,7 @@ describe('CDPClient', () => {
             callFrames: [{ url: 'http://test.com' }],
           },
         };
-        (client as any).handleConsoleAPI(params);
+        (client as any).handleConsoleAPI(params, mockTarget);
       });
 
       expect(capturedEvents.length).toBe(consoleTypes.length);
@@ -192,7 +199,7 @@ describe('CDPClient', () => {
         },
       };
 
-      (client as any).handleConsoleAPI(params);
+      (client as any).handleConsoleAPI(params, mockTarget);
     });
 
     /**
@@ -231,7 +238,7 @@ describe('CDPClient', () => {
         },
       };
 
-      (client as any).handleException(params);
+      (client as any).handleException(params, mockTarget);
     });
 
     it('should handle console events with different types', () => {
@@ -256,7 +263,7 @@ describe('CDPClient', () => {
             callFrames: [{ url: 'http://test.com' }],
           },
         };
-        (client as any).handleConsoleAPI(params);
+        (client as any).handleConsoleAPI(params, mockTarget);
       });
 
       expect(events.length).toBe(types.length);

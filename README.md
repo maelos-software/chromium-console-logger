@@ -445,6 +445,10 @@ Each line in the log file is a valid JSON object representing a captured event.
         "columnNumber": 10
       }
     ]
+  },
+  "tab": {
+    "id": "E4E5E5E5E5E5E5E5E5E5E5E5E5E5E5E5",
+    "title": "My App - Dashboard"
   }
 }
 ```
@@ -475,6 +479,10 @@ Each line in the log file is a valid JSON object representing a captured event.
       "className": "Error",
       "description": "Error: Invalid data format"
     }
+  },
+  "tab": {
+    "id": "E4E5E5E5E5E5E5E5E5E5E5E5E5E5E5E5",
+    "title": "My App - Dashboard"
   }
 }
 ```
@@ -486,10 +494,11 @@ Each line in the log file is a valid JSON object representing a captured event.
 | `ts`               | number | Timestamp in epoch milliseconds                                                            |
 | `event`            | string | Event category: `"console"` or `"exception"`                                               |
 | `type`             | string | Event type: `"log"`, `"warn"`, `"error"`, `"info"`, `"debug"`, `"trace"`, or `"exception"` |
-| `url`              | string | Source URL where the event occurred                                                        |
+| `url`              | string | Source URL where the event occurred (script file or page URL)                              |
 | `args`             | array  | Console arguments (console events only)                                                    |
 | `stackTrace`       | object | CDP StackTrace object (when available)                                                     |
 | `exceptionDetails` | object | Full exception details (exception events only)                                             |
+| `tab`              | object | Tab metadata: `id` (CDP target ID) and `title` (page title)                                |
 
 ## Log Rotation
 

@@ -246,6 +246,10 @@ export class CDPClient extends EventEmitter {
         url: params.stackTrace?.callFrames?.[0]?.url || target.url || 'unknown',
         args: params.args.map((arg: any) => this.serializeRemoteObject(arg)),
         stackTrace: params.stackTrace,
+        tab: {
+          id: target.id,
+          title: target.title || '',
+        },
       };
 
       this.emit('event', event);
@@ -266,6 +270,10 @@ export class CDPClient extends EventEmitter {
         url: params.exceptionDetails?.url || target.url || 'unknown',
         stackTrace: params.exceptionDetails?.stackTrace,
         exceptionDetails: params.exceptionDetails,
+        tab: {
+          id: target.id,
+          title: target.title || '',
+        },
       };
 
       this.emit('event', event);
