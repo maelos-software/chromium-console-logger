@@ -456,5 +456,113 @@ describe('LogWriter', () => {
       expect(parsed.event).toBe('exception');
       expect(parsed.exceptionDetails.text).toBe('Uncaught Error');
     });
+
+    it('should handle write when file handle is null', async () => {
+      const logFile = path.join(tmpDir, 'null-handle.ndjson');
+      const writer = new LogWriter({
+        logFile,
+        maxSizeBytes: 1024 * 1024,
+        rotateKeep: 3,
+        verbose: false,
+      });
+
+      // Close the writer to set fileHandle to null
+      await writer.close();
+
+      const event = {
+        ts: Date.now(),
+        event: 'console' as const,
+        type: 'log' as const,
+        url: 'http://test.com',
+        args: ['test'],
+      };
+
+      // Should not throw, just log error
+      expect(() => writer.write(event)).not.toThrow();
+    });
+
+    it('should handle flush when file handle is null', async () => {
+      const logFile = path.join(tmpDir, 'flush-null.ndjson');
+      const writer = new LogWriter({
+        logFile,
+        maxSizeBytes: 1024 * 1024,
+        rotateKeep: 3,
+        verbose: false,
+      });
+
+      await writer.close();
+
+      // Should resolve immediately
+      await expect(writer.flush()).resolves.toBeUndefined();
+    });
+
+    it('should create writer with verbose mode enabled', async () => {
+      const logFile = path.join(tmpDir, 'verbose.ndjson');
+      const writer = new LogWriter({
+        logFile,
+        maxSizeBytes: 1024 * 1024,
+        rotateKeep: 2,
+        verbose: true,
+      });
+
+      writer.write({
+        ts: Date.now(),
+        event: 'console',
+        type: 'log',
+        url: 'http://test.com',
+        args: ['test'],
+      });
+
+      await writer.flush();
+      await writer.close();
+
+      expect(fs.existsSync(logFile)).toBe(true);
+    });
+
+    it('should handle events with tab metadata', async () => {
+      const logFile = path.join(tmpDir, 'tab-metadata.ndjson');
+      const writer = new LogWriter({
+        logFile,
+        maxSizeBytes: 1024 * 1024,
+        rotateKeep: 3,
+        verbose: false,
+      });
+
+      const event = {
+        ts: Date.now(),
+        event: 'console' as const,
+        type: 'log' as const,
+        url: 'http://test.com',
+        args: ['test'],
+        tab: {
+          id: 'test-tab-id',
+          title: 'Test Tab',
+        },
+      };
+
+      writer.write(event);
+      await writer.flush();
+      await writer.close();
+
+      const content = fs.readFileSync(logFile, 'utf-8');
+      const parsed = JSON.parse(content.trim());
+      expect(parsed.tab).toBeDefined();
+      expect(parsed.tab.id).toBe('test-tab-id');
+      expect(parsed.tab.title).toBe('Test Tab');
+    });
+
+    it('should handle close when already closed', async () => {
+      const logFile = path.join(tmpDir, 'double-close.ndjson');
+      const writer = new LogWriter({
+        logFile,
+        maxSizeBytes: 1024 * 1024,
+        rotateKeep: 3,
+        verbose: false,
+      });
+
+      await writer.close();
+      // Should not throw on second close
+      await expect(writer.close()).resolves.toBeUndefined();
+    });
   });
 });

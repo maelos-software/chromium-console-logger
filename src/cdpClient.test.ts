@@ -544,4 +544,90 @@ describe('CDPClient', () => {
       (client as any).handleConsoleAPI(params, testTarget);
     });
   });
+
+  describe('error handling in event processing', () => {
+    it('should handle errors in console event processing gracefully', () => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      // Mock emit to throw an error
+      const originalEmit = client.emit;
+      client.emit = jest.fn(() => {
+        throw new Error('Emit error');
+      });
+
+      const params = {
+        type: 'log',
+        args: [{ value: 'test' }],
+        stackTrace: { callFrames: [] },
+      };
+
+      // Should not throw, error should be caught
+      expect(() => {
+        (client as any).handleConsoleAPI(params, mockTarget);
+      }).not.toThrow();
+
+      client.emit = originalEmit;
+    });
+
+    it('should handle errors in exception event processing gracefully', () => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      // Mock emit to throw an error
+      const originalEmit = client.emit;
+      client.emit = jest.fn(() => {
+        throw new Error('Emit error');
+      });
+
+      const params = {
+        exceptionDetails: {
+          url: 'http://test.com',
+          stackTrace: { callFrames: [] },
+          exception: { description: 'Error' },
+        },
+      };
+
+      // Should not throw, error should be caught
+      expect(() => {
+        (client as any).handleException(params, mockTarget);
+      }).not.toThrow();
+
+      client.emit = originalEmit;
+    });
+
+    it('should handle missing target properties', (done) => {
+      const client = new CDPClient({
+        host: '127.0.0.1',
+        port: 9222,
+        verbose: false,
+      });
+
+      const incompleteTarget = {
+        id: 'test-id',
+        title: undefined,
+        url: undefined,
+      };
+
+      client.on('event', (event) => {
+        expect(event.tab?.title).toBe('');
+        expect(event.url).toBe('unknown');
+        done();
+      });
+
+      const params = {
+        type: 'log',
+        args: [{ value: 'test' }],
+        stackTrace: undefined,
+      };
+
+      (client as any).handleConsoleAPI(params, incompleteTarget);
+    });
+  });
 });
